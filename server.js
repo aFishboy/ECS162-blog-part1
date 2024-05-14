@@ -127,6 +127,14 @@ app.get('/post/:id', (req, res) => {
 });
 app.post('/posts', (req, res) => {
     // TODO: Add a new post and redirect to home
+    const { title, content } = req.body;
+    const user = getCurrentUser(req);
+    if (user) {
+        addPost(title, content, user);
+        res.redirect('/');
+    } else {
+        res.redirect('/login');
+    }
 });
 app.post('/like/:id', (req, res) => {
     // TODO: Update post likes
@@ -139,12 +147,33 @@ app.get('/avatar/:username', (req, res) => {
 });
 app.post('/register', (req, res) => {
     // TODO: Register a new user
+    const { username } = req.body;
+    if (findUserByUsername(username)) {
+        res.redirect('/error');
+    } else {
+        const newUser = addUser(username);
+        req.session.userId = newUser.id;
+        req.session.loggedIn = true;
+        res.redirect('/');
+    }
 });
 app.post('/login', (req, res) => {
     // TODO: Login a user
+    const { username } = req.body;
+    const user = findUserByUsername(username);
+    if (user) {
+        req.session.userId = user.id;
+        req.session.loggedIn = true;
+        res.redirect('/');
+    } else {
+        res.redirect('/error');
+    }
 });
 app.get('/logout', (req, res) => {
     // TODO: Logout the user
+    req.session.destroy(() => {
+        res.redirect('/');
+    });
 });
 app.post('/delete/:id', isAuthenticated, (req, res) => {
     // TODO: Delete a post if the current user is the owner
@@ -175,16 +204,21 @@ let users = [
 // Function to find a user by username
 function findUserByUsername(username) {
     // TODO: Return user object if found, otherwise return undefined
+    return users.find(user => user.username === username);
 }
 
 // Function to find a user by user ID
 function findUserById(userId) {
     // TODO: Return user object if found, otherwise return undefined
+    return users.find(user => user.id === userId);
 }
 
 // Function to add a new user
 function addUser(username) {
     // TODO: Create a new user object and add to users array
+    const newUser = { id: users.length + 1, username, avatar_url: undefined, memberSince: new Date().toISOString() };
+    users.push(newUser);
+    return newUser;
 }
 
 // Middleware to check if user is authenticated
@@ -230,6 +264,7 @@ function handleAvatar(req, res) {
 // Function to get the current user from session
 function getCurrentUser(req) {
     // TODO: Return the user object if the session user ID matches
+    return findUserById(req.session.userId);
 }
 
 // Function to get all posts, sorted by latest first
@@ -240,6 +275,8 @@ function getPosts() {
 // Function to add a new post
 function addPost(title, content, user) {
     // TODO: Create a new post object and add to posts array
+    const newPost = { id: posts.length + 1, title, content, username: user.username, timestamp: new Date().toISOString(), likes: 0 };
+    posts.push(newPost);
 }
 
 // Function to generate an image avatar
