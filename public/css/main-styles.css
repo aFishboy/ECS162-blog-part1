@@ -1,0 +1,60 @@
+body {
+    background-color: white;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+nav ul {
+    list-style-type: none; /* Remove default list styles */
+    display: flex; /* Make the list items display horizontally */
+}
+
+nav ul li {
+    margin-right: 20px; /* Add margin between menu items */
+}
+
+nav ul li:last-child {
+    margin-right: 0.5vw; /* Remove margin from the last menu item */
+}
+
+nav ul li a {
+    color: black; /* Set the color of the anchor text */
+    text-decoration: none; /* Remove underline */
+    font-size: 2em;
+    /* align-items: baseline;  neeeeeed toooo aligggnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn*/
+}
+
+@media screen and (max-width: 750px) {
+    h1 {
+        font-size: 1em;
+    }
+
+    nav ul li {
+        margin-right: 0; /* Remove horizontal margin */
+        margin-bottom: 10px; /* Add vertical margin */
+    }
+
+    nav ul li:last-child {
+        margin-bottom: 0; /* Remove margin from the last menu item */
+    }
+
+    nav ul li a {
+        font-size: 1em; /* Reduce font size */
+    }
+}
+
+.logo {
+    display: flex;
+    width: 20vw;
+}
+
+.logo img {
+    width: 4vw;
+    height: auto;
+    margin-right: 1vw;
+    margin-left: 0.5vw;
+}
