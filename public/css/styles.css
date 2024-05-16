@@ -1,5 +1,6 @@
 body {
     background-color: rgb(228, 222, 204);
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 header {
@@ -80,12 +81,46 @@ footer {
 }
 
 .posts-list {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     width: 50vw;
     background-color: rgb(128, 127, 218);
 }
 
+.posts-list ul{
+    padding: 0;
+}
+
 .post {
+    display: flex;
     background-color: rgb(216, 225, 252);
     margin-bottom: 15px;
+    border-radius: 17px;
+    box-shadow: 2px 2px 5px -2px black;
+}
+
+.post-avatar {
+    margin: 2%;
+    margin-bottom: 0%;
+}
+
+.post-avatar img {
+    border-radius: 17px;
+}
+
+.post-content {
+    margin-right: 3%;
+    flex: 1;
+}
+
+.post-status-bar {
+    margin-top: 6vh;
+}
+
+.post-content-horz-bar {
+    border: none;
+    height: 1px;
+    background-color: rgb(184, 189, 197);
 }
 

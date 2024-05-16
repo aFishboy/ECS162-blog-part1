@@ -1,19 +1,19 @@
 {{! Partial for a single post }}
 <div class="post">
-    {{title}}
-    {{username}}
     <div class="post-avatar">
         <!-- the user's avatar -->
-        {{avatar_url}}
+        <img src="/avatar/{{username}}" alt="User Avatar">
     </div>
     <div class="post-content preserve-newlines">
         <!-- the post -->
-        {{content}}
+        <h2>{{title}}</h2>
+        <p>{{content}}</p>
         <div class="post-status-bar">
+            <hr class="post-content-horz-bar">
             <!-- everything that is shown in the status bar -->
-            <!-- Heart = ♥ -->
+            <!-- Heart = ♥  or I found this <i class="fas fa-heart"></i>-->
             <!-- font awesome  trashcan = <i class="fas fa-trash-alt"> </i>-->
-            <p>{{likes}} {{username}} {{timestamp}}</p>
+            <p><i class="fas fa-heart"></i> Likes {{likes}} {{username}} {{timestamp}}</p>
         </div>        
     </div>
 </div>
