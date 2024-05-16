@@ -1,0 +1,91 @@
+body {
+    background-color: rgb(228, 222, 204);
+}
+
+header {
+    background-color: azure;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+nav ul {
+    list-style-type: none; /* Remove default list styles */
+    display: flex; /* Make the list items display horizontally */
+}
+
+nav ul li {
+    margin-right: 20px; /* Add margin between menu items */
+}
+
+nav ul li:last-child {
+    margin-right: 0.5vw; /* Remove margin from the last menu item */
+}
+
+nav ul li a {
+    color: black; /* Set the color of the anchor text */
+    text-decoration: none; /* Remove underline */
+    font-size: 2em;
+}
+
+@media screen and (max-width: 750px) {
+    h1 {
+        font-size: 1em;
+    }
+
+    nav ul li {
+        margin-right: 3vw; /* Remove horizontal margin */
+    }
+
+    nav ul li:last-child {
+        margin-bottom: 0; /* Remove margin from the last menu item */
+    }
+
+    nav ul li a {
+        font-size: 1em;
+    }
+}
+
+section {
+    background-color: red;
+}
+
+footer {
+    display: flex;
+    background-color: rgb(121, 204, 133);
+    position: absolute;
+    bottom: 0;
+    width: 99.1vw; /* 100vw and 100% adds horizontal scroll bar for some reason */
+    height: 2.5rem;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    width: 20vw;
+}
+
+.logo img {
+    width: 4vw;
+    height: auto;
+    margin-right: 1vw;
+    margin-left: 0.5vw;
+}
+
+.content-container {
+    display: flex;
+    justify-content: center;
+    background-color: rgb(66, 66, 170);
+}
+
+.posts-list {
+    width: 50vw;
+    background-color: rgb(128, 127, 218);
+}
+
+.post {
+    background-color: rgb(216, 225, 252);
+    margin-bottom: 15px;
+}
+

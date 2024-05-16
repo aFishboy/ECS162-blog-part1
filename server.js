@@ -1,7 +1,7 @@
-const express = require('express');
-const expressHandlebars = require('express-handlebars');
-const session = require('express-session');
-const canvas = require('canvas');
+const express = require("express");
+const expressHandlebars = require("express-handlebars");
+const session = require("express-session");
+const canvas = require("canvas");
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Configuration and Setup
@@ -39,7 +39,7 @@ const PORT = 3000;
 // Set up Handlebars view engine with custom helpers
 //
 app.engine(
-    'handlebars',
+    "handlebars",
     expressHandlebars.engine({
         helpers: {
             toLowerCase: function (str) {
@@ -55,8 +55,8 @@ app.engine(
     })
 );
 
-app.set('view engine', 'handlebars');
-app.set('views', './views');
+app.set("view engine", "handlebars");
+app.set("views", "./views");
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Middleware
@@ -64,28 +64,28 @@ app.set('views', './views');
 
 app.use(
     session({
-        secret: 'oneringtorulethemall',     // Secret key to sign the session ID cookie
-        resave: false,                      // Don't save session if unmodified
-        saveUninitialized: false,           // Don't create session until something stored
-        cookie: { secure: false },          // True if using https. Set to false for development without https
+        secret: "oneringtorulethemall", // Secret key to sign the session ID cookie
+        resave: false, // Don't save session if unmodified
+        saveUninitialized: false, // Don't create session until something stored
+        cookie: { secure: false }, // True if using https. Set to false for development without https
     })
 );
 
 // Replace any of these variables below with constants for your application. These variables
-// should be used in your template files. 
-// 
+// should be used in your template files.
+//
 app.use((req, res, next) => {
-    res.locals.appName = 'MicroBlog';
+    res.locals.appName = "MicroBlog";
     res.locals.copyrightYear = 2024;
-    res.locals.postNeoType = 'Post';
+    res.locals.postNeoType = "Post";
     res.locals.loggedIn = req.session.loggedIn || false;
-    res.locals.userId = req.session.userId || '';
+    res.locals.userId = req.session.userId || "";
     next();
 });
 
-app.use(express.static('public'));                  // Serve static files
-app.use(express.urlencoded({ extended: true }));    // Parse URL-encoded bodies (as sent by HTML forms)
-app.use(express.json());                            // Parse JSON bodies (as sent by API clients)
+app.use(express.static("public")); // Serve static files
+app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies (as sent by HTML forms)
+app.use(express.json()); // Parse JSON bodies (as sent by API clients)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Routes
@@ -95,87 +95,90 @@ app.use(express.json());                            // Parse JSON bodies (as sen
 // We pass the posts and user variables into the home
 // template
 //
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
     const posts = getPosts();
     const user = getCurrentUser(req) || {};
-    res.render('home', { posts, user });
+    res.render("home", { posts, user });
 });
 
 // Register GET route is used for error response from registration
 //
-app.get('/register', (req, res) => {
-    res.render('loginRegister', { regError: req.query.error });
+app.get("/register", (req, res) => {
+    res.render("loginRegister", { regError: req.query.error });
 });
 
 // Login route GET route is used for error response from login
 //
-app.get('/login', (req, res) => {
-    res.render('loginRegister', { loginError: req.query.error });
+app.get("/login", (req, res) => {
+    res.render("loginRegister", { loginError: req.query.error });
 });
 
 // Error route: render error page
 //
-app.get('/error', (req, res) => {
-    res.render('error');
+app.get("/error", (req, res) => {
+    res.render("error");
 });
 
 // Additional routes that you must implement
 
-
-app.get('/post/:id', (req, res) => {
+app.get("/post/:id", (req, res) => {
     // TODO: Render post detail page
 });
-app.post('/posts', (req, res) => {
+app.post("/posts", (req, res) => {
     // TODO: Add a new post and redirect to home
     const { title, content } = req.body;
     const user = getCurrentUser(req);
     if (user) {
         addPost(title, content, user);
-        res.redirect('/');
+        res.redirect("/");
     } else {
-        res.redirect('/login');
+        res.redirect("/login");
     }
 });
-app.post('/like/:id', (req, res) => {
+app.post("/like/:id", (req, res) => {
     // TODO: Update post likes
 });
-app.get('/profile', isAuthenticated, (req, res) => {
+app.get("/profile", isAuthenticated, (req, res) => {
     // TODO: Render profile page
 });
-app.get('/avatar/:username', (req, res) => {
+app.get("/avatar/:username", (req, res) => {
     // TODO: Serve the avatar image for the user
 });
-app.post('/register', (req, res) => {
+app.post("/register", (req, res) => {
     // TODO: Register a new user
     const { username } = req.body;
     if (findUserByUsername(username)) {
-        res.redirect('/error');
+        res.redirect("/error");
     } else {
         const newUser = addUser(username);
         req.session.userId = newUser.id;
         req.session.loggedIn = true;
-        res.redirect('/');
+        res.redirect("/");
     }
 });
-app.post('/login', (req, res) => {
+
+//Credit Dr. Posnett in class
+app.post("/register", registerUser);
+
+app.post("/login", (req, res) => {
     // TODO: Login a user
     const { username } = req.body;
     const user = findUserByUsername(username);
     if (user) {
         req.session.userId = user.id;
         req.session.loggedIn = true;
-        res.redirect('/');
+        res.redirect("/");
     } else {
-        res.redirect('/error');
+        res.redirect("/error");
     }
 });
-app.get('/logout', (req, res) => {
+app.get("/logout", (req, res) => {
     // TODO: Logout the user
     req.session.destroy(() => {
-        res.redirect('/');
+        res.redirect("/");
     });
 });
-app.post('/delete/:id', isAuthenticated, (req, res) => {
+app.post("/delete/:id", isAuthenticated, (req, res) => {
     // TODO: Delete a post if the current user is the owner
 });
 
@@ -193,30 +196,59 @@ app.listen(PORT, () => {
 
 // Example data for posts and users
 let posts = [
-    { id: 1, title: 'Sample Post', content: 'This is a sample post.', username: 'SampleUser', timestamp: '2024-01-01 10:00', likes: 0 },
-    { id: 2, title: 'Another Post', content: 'This is another sample post.', username: 'AnotherUser', timestamp: '2024-01-02 12:00', likes: 0 },
+    {
+        id: 1,
+        title: "Sample Post",
+        content: "This is a sample post.",
+        username: "SampleUser",
+        timestamp: "2024-01-01 10:00",
+        likes: 0,
+    },
+    {
+        id: 2,
+        title: "Another Post",
+        content: "This is another sample post.",
+        username: "AnotherUser",
+        timestamp: "2024-01-02 12:00",
+        likes: 0,
+    },
 ];
 let users = [
-    { id: 1, username: 'SampleUser', avatar_url: undefined, memberSince: '2024-01-01 08:00' },
-    { id: 2, username: 'AnotherUser', avatar_url: undefined, memberSince: '2024-01-02 09:00' },
+    {
+        id: 1,
+        username: "SampleUser",
+        avatar_url: undefined,
+        memberSince: "2024-01-01 08:00",
+    },
+    {
+        id: 2,
+        username: "AnotherUser",
+        avatar_url: undefined,
+        memberSince: "2024-01-02 09:00",
+    },
 ];
 
 // Function to find a user by username
 function findUserByUsername(username) {
     // TODO: Return user object if found, otherwise return undefined
-    return users.find(user => user.username === username);
+    return users.find((user) => user.username === username);
 }
 
 // Function to find a user by user ID
 function findUserById(userId) {
     // TODO: Return user object if found, otherwise return undefined
-    return users.find(user => user.id === userId);
+    return users.find((user) => user.id === userId);
 }
 
 // Function to add a new user
 function addUser(username) {
     // TODO: Create a new user object and add to users array
-    const newUser = { id: users.length + 1, username, avatar_url: undefined, memberSince: new Date().toISOString() };
+    const newUser = {
+        id: users.length + 1,
+        username,
+        avatar_url: undefined,
+        memberSince: new Date().toISOString(),
+    };
     users.push(newUser);
     return newUser;
 }
@@ -227,13 +259,21 @@ function isAuthenticated(req, res, next) {
     if (req.session.userId) {
         next();
     } else {
-        res.redirect('/login');
+        res.redirect("/login");
     }
 }
 
 // Function to register a user
 function registerUser(req, res) {
-    // TODO: Register a new user and redirect appropriately
+    const { username } = req.body;
+    if (findUserByUsername(username)) {
+        res.redirect("/error");
+    } else {
+        const newUser = addUser(username);
+        req.session.userId = newUser.id;
+        req.session.loggedIn = true;
+        res.redirect("/");
+    }
 }
 
 // Function to login a user
@@ -275,17 +315,61 @@ function getPosts() {
 // Function to add a new post
 function addPost(title, content, user) {
     // TODO: Create a new post object and add to posts array
-    const newPost = { id: posts.length + 1, title, content, username: user.username, timestamp: new Date().toISOString(), likes: 0 };
+    const newPost = {
+        id: posts.length + 1,
+        title,
+        content,
+        username: user.username,
+        timestamp: new Date().toISOString(),
+        likes: 0,
+    };
     posts.push(newPost);
 }
 
 // Function to generate an image avatar
 function generateAvatar(letter, width = 100, height = 100) {
-    // TODO: Generate an avatar image with a letter
-    // Steps:
-    // 1. Choose a color scheme based on the letter
-    // 2. Create a canvas with the specified width and height
-    // 3. Draw the background color
-    // 4. Draw the letter in the center
-    // 5. Return the avatar as a PNG buffer
+    const colorHex = letterToColorHex(letter);
+
+    const newCanvas = createCanvas(width, height);
+    const ctx = newCanvas.getContext("2d");
+    ctx.fillStyle = colorHex;
+    ctx.fillRect(0, 0, width, height);
+
+    if (isColorDark(colorHex)) {
+        ctx.fillStyle = "#ffffff";
+    } else {
+        ctx.fillStyle = "#000000";
+    }
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(letter, width / 2, height / 2);
+
+    // Convert the canvas to a PNG buffer
+    return newCanvas.toBuffer();
+}
+
+function letterToColorHex(letter) {
+    const asciiValue = letter.charCodeAt(0);
+    const red = (asciiValue * 123) % 256;
+    const green = (asciiValue * 321) % 256;
+    const blue = (asciiValue * 543) % 256;
+    return `#${toHex(red)}${toHex(green)}${toHex(blue)}`;
+}
+
+function toHex(value) {
+    const hex = value.toString(16);
+    return hex.length === 1 ? `0${hex}` : hex;
+}
+
+function isColorDark(colorHex) {
+    // Convert hex to RGB
+    const r = parseInt(colorHex.substr(1, 2), 16);
+    const g = parseInt(colorHex.substr(3, 2), 16);
+    const b = parseInt(colorHex.substr(5, 2), 16);
+
+    // Calculate luminance
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+    // Check if color is dark or light based on luminance threshold
+    return luminance <= 0.5;
 }
