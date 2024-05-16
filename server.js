@@ -141,9 +141,8 @@ app.post("/like/:id", (req, res) => {
 app.get("/profile", isAuthenticated, (req, res) => {
     // TODO: Render profile page
 });
-app.get("/avatar/:username", (req, res) => {
-    // TODO: Serve the avatar image for the user
-});
+app.get("/avatar/:username", handleAvatar);
+
 app.post("/register", (req, res) => {
     // TODO: Register a new user
     const { username } = req.body;
@@ -207,7 +206,7 @@ let posts = [
     {
         id: 2,
         title: "Another Post",
-        content: "This is another sample post.",
+        content: "This is another sample post. This is another sample post. This is another sample post. This is another sample post. This is another sample post.",
         username: "AnotherUser",
         timestamp: "2024-01-02 12:00",
         likes: 0,
@@ -298,7 +297,11 @@ function updatePostLikes(req, res) {
 
 // Function to handle avatar generation and serving
 function handleAvatar(req, res) {
-    // TODO: Generate and serve the user's avatar image
+    const { username } = req.params; 
+    const firstLetter = username.charAt(0).toUpperCase(); 
+    const avatarBuffer = generateAvatar(firstLetter); 
+    res.set("Content-Type", "image/png"); 
+    res.send(avatarBuffer); 
 }
 
 // Function to get the current user from session
@@ -330,7 +333,7 @@ function addPost(title, content, user) {
 function generateAvatar(letter, width = 100, height = 100) {
     const colorHex = letterToColorHex(letter);
 
-    const newCanvas = createCanvas(width, height);
+    const newCanvas = canvas.createCanvas(width, height);
     const ctx = newCanvas.getContext("2d");
     ctx.fillStyle = colorHex;
     ctx.fillRect(0, 0, width, height);
@@ -340,6 +343,7 @@ function generateAvatar(letter, width = 100, height = 100) {
     } else {
         ctx.fillStyle = "#000000";
     }
+    ctx.font = "50px Arial"
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(letter, width / 2, height / 2);
