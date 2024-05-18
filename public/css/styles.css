@@ -55,7 +55,7 @@ footer {
     display: flex;
     background-color: rgb(121, 204, 133);
     position: absolute;
-    bottom: 0;
+    bottom: auto;
     width: 99.1vw; /* 100vw and 100% adds horizontal scroll bar for some reason */
     height: 2.5rem;
     justify-content: center;
