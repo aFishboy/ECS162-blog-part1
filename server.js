@@ -123,6 +123,12 @@ app.get("/error", (req, res) => {
 
 app.get("/post/:id", (req, res) => {
     // TODO: Render post detail page
+    const post = posts.find((p) => p.id === parseInt(req.params.id, 10));
+    if (post) {
+        res.render("postDetail", { post });
+    } else {
+        res.redirect("/error");
+    }
 });
 app.post("/posts", (req, res) => {
     // TODO: Add a new post and redirect to home
@@ -137,9 +143,19 @@ app.post("/posts", (req, res) => {
 });
 app.post("/like/:id", (req, res) => {
     // TODO: Update post likes
+    const postId = parseInt(req.params.id, 10);
+    const post = posts.find((p) => p.id === postId);
+    const user = getCurrentUser(req);
+    if (post && user && post.username !== user.username) {
+        post.likes += 1;
+    }
+    res.redirect("/");
 });
 app.get("/profile", isAuthenticated, (req, res) => {
     // TODO: Render profile page
+    const user = getCurrentUser(req);
+    const userPosts = posts.filter((post) => post.username === user.username);
+    res.render("profile", { user, posts: userPosts });
 });
 app.get("/avatar/:username", handleAvatar);
 
@@ -179,6 +195,13 @@ app.get("/logout", (req, res) => {
 });
 app.post("/delete/:id", isAuthenticated, (req, res) => {
     // TODO: Delete a post if the current user is the owner
+    const postId = parseInt(req.params.id, 10);
+    const user = getCurrentUser(req);
+    const postIndex = posts.findIndex((p) => p.id === postId && p.username === user.username);
+    if (postIndex >= 0) {
+        posts.splice(postIndex, 1);
+    }
+    res.redirect("/");
 });
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -295,16 +318,29 @@ function loginUser(req, res) {
 // Function to logout a user
 function logoutUser(req, res) {
     // TODO: Destroy session and redirect appropriately
+    req.session.destroy(() => {
+        res.redirect("/");
+    });
 }
 
 // Function to render the profile page
 function renderProfile(req, res) {
     // TODO: Fetch user posts and render the profile page
+    const user = getCurrentUser(req);
+    const userPosts = posts.filter((post) => post.username === user.username);
+    res.render("profile", { user, posts: userPosts });
 }
 
 // Function to update post likes
 function updatePostLikes(req, res) {
     // TODO: Increment post likes if conditions are met
+    const postId = parseInt(req.params.id, 10);
+    const post = posts.find((p) => p.id === postId);
+    const user = getCurrentUser(req);
+    if (post && user && post.username !== user.username) {
+        post.likes += 1;
+    }
+    res.redirect("/");
 }
 
 // Function to handle avatar generation and serving
