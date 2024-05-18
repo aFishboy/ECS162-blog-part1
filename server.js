@@ -147,12 +147,12 @@ app.post("/register", (req, res) => {
     // TODO: Register a new user
     const { username } = req.body;
     if (findUserByUsername(username)) {
-        res.redirect("/error");
+        res.redirect("/register?error=Username+already+exists");
     } else {
         const newUser = addUser(username);
         req.session.userId = newUser.id;
         req.session.loggedIn = true;
-        res.redirect("/");
+        res.redirect("/login");
     }
 });
 
@@ -168,7 +168,7 @@ app.post("/login", (req, res) => {
         req.session.loggedIn = true;
         res.redirect("/");
     } else {
-        res.redirect("/error");
+        res.redirect("/login?error=Invalid+username");
     }
 });
 app.get("/logout", (req, res) => {
@@ -266,18 +266,30 @@ function isAuthenticated(req, res, next) {
 function registerUser(req, res) {
     const { username } = req.body;
     if (findUserByUsername(username)) {
-        res.redirect("/error");
+        res.redirect("/register?error=Username+already+exists");
     } else {
         const newUser = addUser(username);
         req.session.userId = newUser.id;
         req.session.loggedIn = true;
-        res.redirect("/");
+        res.redirect("/login");
     }
 }
 
 // Function to login a user
+//Credit Dr. Posnett in class
 function loginUser(req, res) {
-    // TODO: Login a user and redirect appropriately
+    const username = req.body.username;
+    const user = findUserByUsername(username);
+
+    if (user) {
+        //Successful login
+        req.session.userID = user.id;
+        req.session.loggedIn = true;
+        res.redirect('/');
+    } else {
+        //Invalid username
+        res.redirect('/login?error=Invalid+username');
+    }
 }
 
 // Function to logout a user
