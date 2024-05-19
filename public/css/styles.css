@@ -47,10 +47,6 @@ nav ul li a {
     }
 }
 
-section {
-    background-color: red;
-}
-
 footer {
     display: flex;
     background-color: rgb(121, 204, 133);
@@ -76,20 +72,26 @@ footer {
 
 .content-container {
     display: flex;
-    justify-content: center;
-    background-color: rgb(66, 66, 170);
+    justify-content: space-between;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #f9f9f9;
 }
 
 .posts-list {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    width: 50vw;
+    width: 45vw;
     background-color: rgb(128, 127, 218);
+    border-radius: 10px;
+    padding: 20px;
 }
 
-.posts-list ul{
+.posts-list ul {
     padding: 0;
+    list-style-type: none;
 }
 
 .post {
@@ -125,22 +127,19 @@ footer {
 }
 
 /* create a post section */
-.post-form {
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+.new-post {
     padding: 20px;
     margin-bottom: 20px;
-    width: 50vw;
+    width: 45vw;
     max-width: 800px;
 }
 
-.post-form h2 {
+.new-post h2 {
     text-align: center;
 }
 
-.post-form input[type="text"],
-.post-form textarea {
+.new-post input[type="text"],
+.new-post textarea {
     width: 100%;
     padding: 10px;
     margin: 10px 0;
@@ -149,14 +148,13 @@ footer {
     box-sizing: border-box;
 }
 
-.post-form .form-actions {
+.new-post .form-actions {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.post-form .emoji-button,
-.post-form .post-button {
+.new-post .emoji-button {
     background-color: #007bff;
     color: white;
     border: none;
@@ -165,12 +163,22 @@ footer {
     cursor: pointer;
 }
 
-.post-form .emoji-button:hover,
-.post-form .post-button:hover {
+.new-post .post-button {
+    background-color: #007bff;
+    width: 88%;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.new-post .emoji-button:hover,
+.new-post .post-button:hover {
     background-color: #0056b3;
 }
 
-.post-form .emoji-panel {
+.new-post .emoji-panel {
     margin-top: 10px;
     padding: 10px;
     border: 1px solid #ccc;
@@ -178,7 +186,7 @@ footer {
     background-color: #fff;
 }
 
-.post-form #emoji-container {
+.new-post #emoji-container {
     display: flex;
     flex-wrap: wrap;
     max-height: 200px;
@@ -188,14 +196,13 @@ footer {
     border-radius: 5px;
 }
 
-.post-form #emoji-grid span {
+.new-post #emoji-grid span {
     font-size: 20px;
     margin: 5px;
     cursor: pointer;
 }
 
-.post-form #emoji-search {
-    width: calc(100% - 20px);
+.new-post #emoji-search {
     padding: 10px;
     margin-bottom: 10px;
     border: 1px solid #ccc;
@@ -209,7 +216,7 @@ footer {
         align-items: center;
     }
 
-    .post-form,
+    .new-post,
     .posts-list {
         width: 90%;
     }
