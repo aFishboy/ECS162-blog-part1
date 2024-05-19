@@ -124,3 +124,93 @@ footer {
     background-color: rgb(184, 189, 197);
 }
 
+/* create a post section */
+.post-form {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+    width: 50vw;
+    max-width: 800px;
+}
+
+.post-form h2 {
+    text-align: center;
+}
+
+.post-form input[type="text"],
+.post-form textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.post-form .form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.post-form .emoji-button,
+.post-form .post-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.post-form .emoji-button:hover,
+.post-form .post-button:hover {
+    background-color: #0056b3;
+}
+
+.post-form .emoji-panel {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
+.post-form #emoji-container {
+    display: flex;
+    flex-wrap: wrap;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.post-form #emoji-grid span {
+    font-size: 20px;
+    margin: 5px;
+    cursor: pointer;
+}
+
+.post-form #emoji-search {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+    .content-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .post-form,
+    .posts-list {
+        width: 90%;
+    }
+}

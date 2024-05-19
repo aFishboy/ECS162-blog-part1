@@ -4,38 +4,34 @@
 {{! New Post Submission Form }}
 <section class="content-container">
     {{#if loggedIn}}
-        <!-- show the create post form when logged in -->
-        <section class="post-form">
-            <!-- make a header here -->
+        <section class="new-post">
+            <h2>Create a new Post</h2>
             <form action="/posts" method="POST">
-                <!-- title input field name = "title" -->
-                <!-- text area input field name = "content" -->
-
+                <input type="text" name="title" placeholder="Title" required>
+                <textarea name="content" placeholder="What's on your mind?" required></textarea>
                 <div class="form-actions">
                     <button type="button" class="emoji-button" onclick="toggleEmojiPanel()">😀</button>
                     <button type="submit" class="post-button">Post</button>
                 </div>
             </form>
-
             <div id="emoji-container" class="emoji-panel" style="display: none;">
-                <!-- input field for the emoji search, use oninput="searchEmojis() -->
-                <!-- a div, id = "emoji-grid" -->
+                <input type="text" id="emoji-search" placeholder="Search emojis..." oninput="searchEmojis()">
+                <div id="emoji-grid"></div>
             </div>
         </section>
     {{/if}}
 
-    <section class="posts-list">
-        <!-- recent posts -->
 
+    <section class="posts-list">
+        <h2>Recent Posts</h2>
         {{#if posts.length}}
-        <ul>
-            {{#each posts}}
-                <!-- you have to pass the user in to posts and this is the syntax -->
-                {{> post this user=../user}}            
-            {{/each}}
-        </ul>
+            <ul>
+                {{#each posts}}
+                    {{> post this user=../user}}
+                {{/each}}
+            </ul>
         {{else}}
-            <!-- no posts, oh no, what now? -->
+            <p>No posts available.</p>
         {{/if}}
     </section>
 </section>
@@ -60,6 +56,12 @@ function toggleEmojiPanel() {
 
     if(container.style.display === 'block' && allEmojis.length == 0){
         // go "Fetch" you some emojis and show them off with displayEmojies
+        fetch('https://emoji-api.com/emojis?access_key=3680cd46745930099a37bd4d231244b9ce743075') //aidan api key
+            .then(response => response.json())
+            .then(data => {
+                allEmojis = data;
+                displayEmojis(allEmojis);
+            });
     }
 }
 
@@ -85,14 +87,15 @@ function searchEmojis() {
     // array.filter takes a predicate
     // use string.includes. 
 
-    const filteredEmojis = allEmojis.filter(...);
+    const filteredEmojis = allEmojis.filter(emoji => emoji.slug.includes(searchTerm));
     
     displayEmojis(filteredEmojis);
 }
 
 function insertEmoji(emoji) {
     // put an emoji on a form somehow. 
-
+    const textarea = document.querySelector('textarea[name="content"]');
+    textarea.value += emoji;
     // do this when you're doing getting the emoji on the form
     //
     textarea.focus();  // Keep focus on the textarea
