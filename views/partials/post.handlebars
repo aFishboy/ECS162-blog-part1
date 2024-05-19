@@ -1,19 +1,24 @@
 {{! Partial for a single post }}
 <div class="post">
     <div class="post-avatar">
-        <!-- the user's avatar -->
         <img src="/avatar/{{username}}" alt="User Avatar">
     </div>
     <div class="post-content preserve-newlines">
-        <!-- the post -->
-        <h2>{{title}}</h2>
+        <h3>{{title}}</h3>
         <p>{{content}}</p>
         <div class="post-status-bar">
             <hr class="post-content-horz-bar">
             <!-- everything that is shown in the status bar -->
             <!-- Heart = ♥  or I found this <i class="fas fa-heart"></i>-->
             <!-- font awesome  trashcan = <i class="fas fa-trash-alt"> </i>-->
-            <p><i class="fas fa-heart"></i> Likes {{likes}} {{username}} {{timestamp}}</p>
+            <div class="post-actions">
+                <p><i class="fas fa-heart"></i> {{likes}} Likes - Posted by {{username}} on {{timestamp}}</p>
+                {{#ifCond username ../user.username}}
+                    <button class="delete-button" data-id="{{id}}" onclick="handleDeleteClick(event)">Delete <i class="fas fa-trash-alt"></i></button>
+                {{else}}
+                    <button class="like-button" data-id="{{id}}" onclick="handleLikeClick(event)">Like <i class="fas fa-heart"></i></button>
+                {{/ifCond}}
+            </div>
         </div>        
     </div>
 </div>
@@ -22,14 +27,15 @@
     function handleLikeClick(event) {
         const postId = event.target.getAttribute('data-id');
 
-        // you might want to "fetch" something...        
+        // you might want to "fetch" something...
+        const postId = event.target.closest('.like-button').getAttribute('data-id');
+        fetch(`/like/${postId}`, { method: 'POST' })
+            .then(() => window.location.reload());        
     }
 
     function handleDeleteClick(event) {
-        const buttonElement = event.target.closest('.delete-button');
-        const postId = buttonElement.getAttribute('data-id');        
-
-        // you might want to "fetch" something...        
-        
+        const postId = event.target.closest('.delete-button').getAttribute('data-id');
+        fetch(`/delete/${postId}`, { method: 'POST' })
+            .then(() => window.location.reload());
     }    
 </script>
