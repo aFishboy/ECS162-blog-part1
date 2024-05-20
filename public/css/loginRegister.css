@@ -77,6 +77,11 @@ body {
     margin-bottom: 10px;
 }
 
+.successReg {
+    color: rgb(0, 0, 0);
+    margin-bottom: 10px;
+}
+
 @media (max-width: 768px) {
     .login-register-wrapper {
         flex-direction: column;
