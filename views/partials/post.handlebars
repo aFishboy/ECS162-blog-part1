@@ -12,12 +12,14 @@
             <!-- Heart = ♥  or I found this <i class="fas fa-heart"></i>-->
             <!-- font awesome  trashcan = <i class="fas fa-trash-alt"> </i>-->
             <div class="post-actions">
-                <p><i class="fas fa-heart"></i> {{likes}} Likes - Posted by {{username}} on {{timestamp}}</p>
-                {{#ifCond username ../user.username}}
-                    <button class="delete-button" data-id="{{id}}" onclick="handleDeleteClick(event)">Delete <i class="fas fa-trash-alt"></i></button>
-                {{else}}
-                    <button class="like-button" data-id="{{id}}" onclick="handleLikeClick(event)">Like <i class="fas fa-heart"></i></button>
-                {{/ifCond}}
+                <p>
+                    {{#ifCond username ../user.username}}
+                        <button class="delete-button" data-id="{{id}}" onclick="handleDeleteClick(event)"><i class="fas fa-trash-alt"></i></button>
+                    {{else}}
+                        <button class="like-button" data-id="{{id}}" onclick="handleLikeClick(event)"><i class="fas fa-heart"></i></button>
+                    {{/ifCond}}
+                    {{likes}} Likes - Posted by {{username}} on {{timestamp}}
+                </p>
             </div>
         </div>        
     </div>
@@ -25,17 +27,15 @@
 <script>
 
     function handleLikeClick(event) {
-        const postId = event.target.getAttribute('data-id');
-
         // you might want to "fetch" something...
         const postId = event.target.closest('.like-button').getAttribute('data-id');
         fetch(`/like/${postId}`, { method: 'POST' })
-            .then(() => window.location.reload());        
+            .then(() => window.location.reload());
     }
 
     function handleDeleteClick(event) {
         const postId = event.target.closest('.delete-button').getAttribute('data-id');
         fetch(`/delete/${postId}`, { method: 'POST' })
             .then(() => window.location.reload());
-    }    
+}
 </script>
