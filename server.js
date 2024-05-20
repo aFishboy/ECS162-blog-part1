@@ -102,14 +102,21 @@ app.get("/", (req, res) => {
 });
 
 // Register GET route is used for error response from registration
-//
+// or to display success from registration
 app.get("/register", (req, res) => {
-    res.render("loginRegister", { regError: req.query.error });
+    console.log("success " + req.query.successReg);
+    console.log("error " + req.query.error);
+    if (req.query.error){
+        res.render("loginRegister", { regError: req.query.error });
+    } else {
+        res.render("loginRegister", { successReg: req.query.successReg });
+    }
 });
 
 // Login route GET route is used for error response from login
 //
 app.get("/login", (req, res) => {
+    console.log("app.get /login");
     res.render("loginRegister", { loginError: req.query.error });
 });
 
@@ -158,19 +165,6 @@ app.get("/profile", isAuthenticated, (req, res) => {
     res.render("profile", { user, posts: userPosts });
 });
 app.get("/avatar/:username", handleAvatar);
-
-app.post("/register", (req, res) => {
-    // TODO: Register a new user
-    const { username } = req.body;
-    if (findUserByUsername(username)) {
-        res.redirect("/register?error=Username+already+exists");
-    } else {
-        const newUser = addUser(username);
-        req.session.userId = newUser.id;
-        req.session.loggedIn = true;
-        res.redirect("/login");
-    }
-});
 
 //Credit Dr. Posnett in class
 app.post("/register", registerUser);
@@ -232,7 +226,7 @@ let posts = [
         content: "This is another sample post. This is another sample post. This is another sample post. This is another sample post. This is another sample post.",
         username: "AnotherUser",
         timestamp: "2024-01-02 12:00",
-        likes: 0,
+        likes: 3,
     },
 ];
 let users = [
@@ -287,14 +281,14 @@ function isAuthenticated(req, res, next) {
 
 // Function to register a user
 function registerUser(req, res) {
+    // TODO: Register a new user
     const { username } = req.body;
     if (findUserByUsername(username)) {
+        console.log("Username exists " + username);
         res.redirect("/register?error=Username+already+exists");
     } else {
         const newUser = addUser(username);
-        req.session.userId = newUser.id;
-        req.session.loggedIn = true;
-        res.redirect("/login");
+        res.redirect("/register?successReg=Account+registered+successfully.+Please+login.");
     }
 }
 
