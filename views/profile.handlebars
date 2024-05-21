@@ -23,7 +23,7 @@
         {{#if user.posts.length}}
             <ul>
                 {{#each user.posts}}
-                    <li>{{> post this user=../user}}</li>
+                    <li>{{> post this user=../user postNeoType=../postNeoType}}</li>
                 {{/each}}
             </ul>
         {{else}}
