@@ -104,8 +104,6 @@ app.get("/", (req, res) => {
 // Register GET route is used for error response from registration
 // or to display success from registration
 app.get("/register", (req, res) => {
-    console.log("success " + req.query.successReg);
-    console.log("error " + req.query.error);
     if (req.query.error){
         res.render("loginRegister", { regError: req.query.error });
     } else {
@@ -116,7 +114,6 @@ app.get("/register", (req, res) => {
 // Login route GET route is used for error response from login
 //
 app.get("/login", (req, res) => {
-    console.log("app.get /login");
     res.render("loginRegister", { loginError: req.query.error });
 });
 
@@ -195,8 +192,6 @@ app.get("/logout", (req, res) => {
     });
 });
 app.post("/delete/:id", isAuthenticated, (req, res) => {
-    console.log("POST /delete/:id");
-    // TODO: Delete a post if the current user is the owner
     const postId = parseInt(req.params.id, 10);
     const user = getCurrentUser(req);
     const postIndex = posts.findIndex((p) => p.id === postId && p.username === user.username);
@@ -274,6 +269,7 @@ function addUser(username) {
         username,
         avatar_url: undefined,
         memberSince: new Date().toISOString(),
+        likedPosts: new Set(),
     };
     users.push(newUser);
     return newUser;
@@ -281,7 +277,6 @@ function addUser(username) {
 
 // Middleware to check if user is authenticated
 function isAuthenticated(req, res, next) {
-    console.log("userID " + req.session.userId);
     if (req.session.userId) {
         next();
     } else {
