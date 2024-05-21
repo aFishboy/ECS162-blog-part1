@@ -27,18 +27,19 @@
                 {{#if loggedIn}}
                     <li><a href="/">Home</a></li>
                     <li><a href="/profile">Profile</a></li>
-                    <li><a href="/logout">Logout <span>{{user.username}}</span> </a></li>
-                    <div class="user-info">
-
-                        <!-- conditional rendering based on variables -->
-                        <img src="{{#if user.avatar_url}}
-                                        {{user.avatar_url}}
-                                    {{else}}
-                                        /avatar/{{user.username}}
-                                    {{/if}}" 
-                                    alt="User Avatar" 
-                                    class="header-avatar">
-                    </div>
+                    <li><a href="/logout">Logout</a></li>
+                    <li>
+                        <a href="/profile" class="user-info">
+                            <img src="{{#if user.avatar_url}}
+                                            {{user.avatar_url}}
+                                        {{else}}
+                                            /avatar/{{user.username}}
+                                        {{/if}}" 
+                                        alt="User Avatar" 
+                                        class="header-avatar">
+                            {{user.username}}
+                        </a>
+                    </li>
                 {{else}}
                     <li><a href="/">Home</a></li>
                     <li><a href="/login">Login/Register</a></li>

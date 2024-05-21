@@ -291,13 +291,14 @@ function isAuthenticated(req, res, next) {
 
 // Function to register a user
 function registerUser(req, res) {
-    // TODO: Register a new user
     const { username } = req.body;
     if (findUserByUsername(username)) {
-        console.log("Username exists " + username);
         res.redirect("/register?error=Username+already+exists");
+    } 
+    else if (/\s/.test(username)) {
+        res.redirect("/register?error=Username+cannot+contain+whitespace");
     } else {
-        const newUser = addUser(username);
+        addUser(username);
         res.redirect("/register?successReg=Account+registered+successfully.+Please+login.");
     }
 }
