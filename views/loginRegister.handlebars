@@ -1,7 +1,7 @@
 {{! Use the main layout }}
 {{!< main }}
 
-<link rel="stylesheet" href="/css/loginRegister.css">
+<link rel="stylesheet" href="/css/login-register.css">
 
 <div class="container">
     <div class="login-register-wrapper">
@@ -23,6 +23,9 @@
             <h2>Register</h2>
             {{#if regError}}
                 <p class="error">{{regError}}</p>
+            {{/if}}
+            {{#if successReg}}
+                <p class="successReg">{{successReg}}</p>
             {{/if}}
             <form action="/register" method="POST">
                 <label for="register-username">Username:</label>

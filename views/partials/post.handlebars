@@ -1,4 +1,8 @@
 {{! Partial for a single post }}
+
+<link rel="stylesheet" href="/css/post-styles.css">  
+
+
 <div class="post">
     <div class="post-avatar">
         <img src="/avatar/{{username}}" alt="User Avatar">
@@ -6,14 +10,14 @@
     <div class="post-content preserve-newlines">
         <h3>{{title}}</h3>
         <p>{{content}}</p>
+        <hr class="post-content-horz-bar">
         <div class="post-status-bar">
-            <hr class="post-content-horz-bar">
             <!-- everything that is shown in the status bar -->
             <!-- Heart = ♥  or I found this <i class="fas fa-heart"></i>-->
             <!-- font awesome  trashcan = <i class="fas fa-trash-alt"> </i>-->
             <div class="post-actions">
                 <p>
-                    {{#ifCond username ../user.username}}
+                    {{#ifCond this.username user.username}}
                         <button class="delete-button" data-id="{{id}}" onclick="handleDeleteClick(event)"><i class="fas fa-trash-alt"></i></button>
                     {{else}}
                         <button class="like-button" data-id="{{id}}" onclick="handleLikeClick(event)"><i class="fas fa-heart"></i></button>
@@ -34,8 +38,9 @@
     }
 
     function handleDeleteClick(event) {
+        console.log("delete event")
         const postId = event.target.closest('.delete-button').getAttribute('data-id');
         fetch(`/delete/${postId}`, { method: 'POST' })
             .then(() => window.location.reload());
-}
+    }
 </script>

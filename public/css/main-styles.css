@@ -1,0 +1,102 @@
+body {
+    background-color: rgb(228, 222, 204);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+header {
+    background-color: azure;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+a {
+    color: black; 
+    text-decoration: none;
+}
+
+nav ul {
+    list-style-type: none; 
+    display: flex; 
+    align-items: center;
+}
+
+nav li {
+    margin-right: 20px; 
+}
+
+nav li:last-child {
+    margin-right: 0.5vw; 
+}
+
+nav li a {
+    font-size: 2em;
+}
+
+@media screen and (max-width: 750px) {
+    h1 {
+        font-size: 1em;
+    }
+
+    nav ul li {
+        margin-right: 3vw; 
+    }
+
+    nav ul li:last-child {
+        margin-bottom: 0; /* Remove margin from the last menu item */
+    }
+
+    nav ul li a {
+        font-size: 1em;
+    }
+}
+
+footer {
+    display: flex;
+    background-color: rgb(121, 204, 133);
+    position: absolute;
+    bottom: auto;
+    width: 99.1vw; /* 100vw and 100% adds horizontal scroll bar for some reason */
+    height: 2.5rem;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    width: 20vw;
+}
+
+.logo img {
+    width: 4vw;
+    height: auto;
+    margin-right: 1vw;
+    margin-left: 0.5vw;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 1em;
+    margin: 0 5px;
+}
+
+.header-avatar {
+    width: 75px;
+    height: auto;
+    border-radius: 12%;
+    margin-bottom: 5px;
+}
+
+@media (max-width: 768px) {
+    .content-container {
+        flex-direction: column;
+    }
+
+    .new-post,
+    .posts-list {
+        width: 100%;
+        margin: 10px 0;
+    }
+}

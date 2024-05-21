@@ -102,14 +102,21 @@ app.get("/", (req, res) => {
 });
 
 // Register GET route is used for error response from registration
-//
+// or to display success from registration
 app.get("/register", (req, res) => {
-    res.render("loginRegister", { regError: req.query.error });
+    console.log("success " + req.query.successReg);
+    console.log("error " + req.query.error);
+    if (req.query.error){
+        res.render("loginRegister", { regError: req.query.error });
+    } else {
+        res.render("loginRegister", { successReg: req.query.successReg });
+    }
 });
 
 // Login route GET route is used for error response from login
 //
 app.get("/login", (req, res) => {
+    console.log("app.get /login");
     res.render("loginRegister", { loginError: req.query.error });
 });
 
@@ -146,31 +153,25 @@ app.post("/like/:id", (req, res) => {
     const postId = parseInt(req.params.id, 10);
     const post = posts.find((p) => p.id === postId);
     const user = getCurrentUser(req);
-    if (post && user && post.username !== user.username) {
-        post.likes += 1;
+    if (post && user) {
+        if (!postLikedByUser(postId, user)) {
+            post.likes += 1;
+            user.likedPosts.add(postId);
+        } else {
+            post.likes -= 1;
+            user.likedPosts.delete(postId);
+        }
+        res.redirect("/");
     }
-    res.redirect("/");
 });
 app.get("/profile", isAuthenticated, (req, res) => {
     // TODO: Render profile page
     const user = getCurrentUser(req);
     const userPosts = posts.filter((post) => post.username === user.username);
+    user.posts = userPosts;
     res.render("profile", { user, posts: userPosts });
 });
 app.get("/avatar/:username", handleAvatar);
-
-app.post("/register", (req, res) => {
-    // TODO: Register a new user
-    const { username } = req.body;
-    if (findUserByUsername(username)) {
-        res.redirect("/register?error=Username+already+exists");
-    } else {
-        const newUser = addUser(username);
-        req.session.userId = newUser.id;
-        req.session.loggedIn = true;
-        res.redirect("/login");
-    }
-});
 
 //Credit Dr. Posnett in class
 app.post("/register", registerUser);
@@ -194,6 +195,7 @@ app.get("/logout", (req, res) => {
     });
 });
 app.post("/delete/:id", isAuthenticated, (req, res) => {
+    console.log("POST /delete/:id");
     // TODO: Delete a post if the current user is the owner
     const postId = parseInt(req.params.id, 10);
     const user = getCurrentUser(req);
@@ -232,7 +234,7 @@ let posts = [
         content: "This is another sample post. This is another sample post. This is another sample post. This is another sample post. This is another sample post.",
         username: "AnotherUser",
         timestamp: "2024-01-02 12:00",
-        likes: 0,
+        likes: 3,
     },
 ];
 let users = [
@@ -241,12 +243,14 @@ let users = [
         username: "SampleUser",
         avatar_url: undefined,
         memberSince: "2024-01-01 08:00",
+        likedPosts: new Set(),
     },
     {
         id: 2,
         username: "AnotherUser",
         avatar_url: undefined,
         memberSince: "2024-01-02 09:00",
+        likedPosts: new Set(),
     },
 ];
 
@@ -277,7 +281,7 @@ function addUser(username) {
 
 // Middleware to check if user is authenticated
 function isAuthenticated(req, res, next) {
-    console.log(req.session.userId);
+    console.log("userID " + req.session.userId);
     if (req.session.userId) {
         next();
     } else {
@@ -290,11 +294,12 @@ function registerUser(req, res) {
     const { username } = req.body;
     if (findUserByUsername(username)) {
         res.redirect("/register?error=Username+already+exists");
+    } 
+    else if (/\s/.test(username)) {
+        res.redirect("/register?error=Username+cannot+contain+whitespace");
     } else {
-        const newUser = addUser(username);
-        req.session.userId = newUser.id;
-        req.session.loggedIn = true;
-        res.redirect("/login");
+        addUser(username);
+        res.redirect("/register?successReg=Account+registered+successfully.+Please+login.");
     }
 }
 
@@ -343,6 +348,10 @@ function updatePostLikes(req, res) {
     res.redirect("/");
 }
 
+function postLikedByUser(postId, user) {
+    return user.likedPosts.has(postId);
+}
+
 // Function to handle avatar generation and serving
 function handleAvatar(req, res) {
     const { username } = req.params; 
@@ -371,10 +380,19 @@ function addPost(title, content, user) {
         title,
         content,
         username: user.username,
-        timestamp: new Date().toISOString(),
+        timestamp: formatDate(new Date()),
         likes: 0,
     };
     posts.push(newPost);
+}
+
+function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
 }
 
 // Function to generate an image avatar
