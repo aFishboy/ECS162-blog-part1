@@ -1,18 +1,14 @@
-# ECS162-blog-part1
+# ECS162 Blog Part A
 
-## How to run server without having to restart on every change
+## Aidan Khatana, Samuel Howard
 
-### Install nodemon globally via npm
-
-npm install -g nodemon
-
-### Instead of using node to run the server, use nodemon
-
-nodemon server.js
-
-### Necessary Installations
+## Necessary Installations
 
 npm init -y  
 npm install express express-handlebars  
 npm install express-session  
 npm install canvas
+
+## Optional Installations
+
+npm install -g nodemon
