@@ -153,10 +153,16 @@ app.post("/like/:id", (req, res) => {
     const postId = parseInt(req.params.id, 10);
     const post = posts.find((p) => p.id === postId);
     const user = getCurrentUser(req);
-    if (post && user && post.username !== user.username) {
-        post.likes += 1;
+    if (post && user) {
+        if (!postLikedByUser(postId, user)) {
+            post.likes += 1;
+            user.likedPosts.add(postId);
+        } else {
+            post.likes -= 1;
+            user.likedPosts.delete(postId);
+        }
+        res.redirect("/");
     }
-    res.redirect("/");
 });
 app.get("/profile", isAuthenticated, (req, res) => {
     // TODO: Render profile page
@@ -237,12 +243,14 @@ let users = [
         username: "SampleUser",
         avatar_url: undefined,
         memberSince: "2024-01-01 08:00",
+        likedPosts: new Set(),
     },
     {
         id: 2,
         username: "AnotherUser",
         avatar_url: undefined,
         memberSince: "2024-01-02 09:00",
+        likedPosts: new Set(),
     },
 ];
 
@@ -337,6 +345,10 @@ function updatePostLikes(req, res) {
         post.likes += 1;
     }
     res.redirect("/");
+}
+
+function postLikedByUser(postId, user) {
+    return user.likedPosts.has(postId);
 }
 
 // Function to handle avatar generation and serving
