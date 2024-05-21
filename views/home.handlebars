@@ -58,7 +58,7 @@ function toggleEmojiPanel() {
 
     if(container.style.display === 'block' && allEmojis.length == 0){
         // go "Fetch" you some emojis and show them off with displayEmojies
-        fetch('https://emoji-api.com/emojis?access_key=3680cd46745930099a37bd4d231244b9ce743075') //aidan api key
+        fetch('/emoji') //aidan api key
             .then(response => response.json())
             .then(data => {
                 allEmojis = data;

@@ -2,6 +2,8 @@ const express = require("express");
 const expressHandlebars = require("express-handlebars");
 const session = require("express-session");
 const canvas = require("canvas");
+require('dotenv').config();
+
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Configuration and Setup
@@ -168,7 +170,6 @@ app.post("/like/:id", (req, res) => {
     }
 });
 app.get("/profile", isAuthenticated, (req, res) => {
-    // TODO: Render profile page
     const user = getCurrentUser(req);
     const userPosts = posts.filter((post) => post.username === user.username);
     user.posts = userPosts;
@@ -178,6 +179,18 @@ app.get("/avatar/:username", handleAvatar);
 
 //Credit Dr. Posnett in class
 app.post("/register", registerUser);
+
+app.get("/emoji", async (req, res) => {
+    try {
+        const response = await fetch(`https://emoji-api.com/emojis?access_key=${process.env.EMOJI_API_KEY}`);
+        const emojis = await response.json();
+        console.log("🚀 ~ app.get ~ emojis:", emojis)
+        res.json(emojis);
+    } catch (error) {
+        console.error('Error fetching emojis:', error);
+        res.status(500).json({ error: 'Failed to fetch emojis' });
+    }
+});
 
 app.post("/login", (req, res) => {
     // TODO: Login a user
