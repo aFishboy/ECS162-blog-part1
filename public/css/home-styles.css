@@ -14,7 +14,7 @@
     margin-right: 20px;
 }
 
-.new-post h2 {
+h2 {
     text-align: center;
 }
 
@@ -90,4 +90,16 @@
 .posts-list ul {
     padding: 0;
     list-style: none;
+}
+
+@media (max-width: 768px) {
+    .content-container {
+        flex-direction: column;
+    }
+
+    .new-post,
+    .posts-list {
+        width: auto;
+        margin: 10px 0;
+    }
 }
