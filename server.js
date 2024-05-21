@@ -268,7 +268,7 @@ function addUser(username) {
         id: users.length + 1,
         username,
         avatar_url: undefined,
-        memberSince: new Date().toISOString(),
+        memberSince: formatDate(new Date()),
         likedPosts: new Set(),
     };
     users.push(newUser);
