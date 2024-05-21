@@ -75,9 +75,9 @@ app.use(
 // should be used in your template files.
 //
 app.use((req, res, next) => {
-    res.locals.appName = "MicroBlog";
+    res.locals.appName = "Finster";
     res.locals.copyrightYear = 2024;
-    res.locals.postNeoType = "Post";
+    res.locals.postNeoType = "Cast";
     res.locals.loggedIn = req.session.loggedIn || false;
     res.locals.userId = req.session.userId || "";
     next();
@@ -268,7 +268,7 @@ function addUser(username) {
         id: users.length + 1,
         username,
         avatar_url: undefined,
-        memberSince: new Date().toISOString(),
+        memberSince: formatDate(new Date()),
         likedPosts: new Set(),
     };
     users.push(newUser);

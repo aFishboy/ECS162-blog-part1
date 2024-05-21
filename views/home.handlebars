@@ -7,13 +7,13 @@
 <section class="content-container">
     {{#if loggedIn}}
         <section class="new-post">
-            <h2>Create a new Post</h2>
+            <h2>Create a new {{postNeoType}}</h2>
             <form action="/posts" method="POST">
                 <input type="text" name="title" placeholder="Title" required>
                 <textarea name="content" placeholder="What's on your mind?" required></textarea>
                 <div class="form-actions">
                     <button type="button" class="emoji-button" onclick="toggleEmojiPanel()">😀</button>
-                    <button type="submit" class="post-button">Post</button>
+                    <button type="submit" class="post-button">{{postNeoType}}</button>
                 </div>
             </form>
             <div id="emoji-container" class="emoji-panel" style="display: none;">
@@ -25,7 +25,7 @@
 
 
     <section class="posts-list">
-        <h2>Recent Posts</h2>
+        <h2>Recent {{postNeoType}}s</h2>
         {{#if posts.length}}
             <ul>
                 {{#each posts}}
