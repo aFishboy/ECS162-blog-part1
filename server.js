@@ -220,40 +220,96 @@ app.listen(PORT, () => {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 // Example data for posts and users
+
 let posts = [
     {
         id: 1,
-        title: "Sample Post",
-        content: "This is a sample post.",
-        username: "SampleUser",
+        title: "Hooked on Fishing",
+        content: "Just reeled in the big one!",
+        username: "FishermanFred",
         timestamp: "2024-01-01 10:00",
         likes: 0,
     },
     {
         id: 2,
-        title: "Another Post",
-        content: "This is another sample post. This is another sample post. This is another sample post. This is another sample post. This is another sample post.",
-        username: "AnotherUser",
+        title: "Reel Deal",
+        content: "This catch is off the scales!",
+        username: "ReelAngler",
         timestamp: "2024-01-02 12:00",
         likes: 3,
     },
+    {
+        id: 3,
+        title: "The One That Got Away",
+        content: "Lost a big one today, but here's a new post.",
+        username: "FishermanFred",
+        timestamp: "2024-01-03 15:30",
+        likes: 2,
+    },
+    {
+        id: 4,
+        title: "Catch of the Day",
+        content: "Just netted something exciting! Don't miss it!",
+        username: "ANewbieNemo",
+        timestamp: "2024-01-04 09:45",
+        likes: 1,
+    },
+    {
+        id: 5,
+        title: "Tackle Time",
+        content: "Getting ready to cast my line into the depths!",
+        username: "ProBaiter",
+        timestamp: "2024-01-05 11:15",
+        likes: 0,
+    },
+    {
+        id: 6,
+        title: "Fishing Frenzy",
+        content: "Caught so many fish today, my arms are aching!",
+        username: "MasterAngler",
+        timestamp: "2024-01-06 14:20",
+        likes: 5,
+    },
 ];
+
 let users = [
     {
         id: 1,
-        username: "SampleUser",
+        username: "FishermanFred",
         avatar_url: undefined,
         memberSince: "2024-01-01 08:00",
         likedPosts: new Set(),
     },
     {
         id: 2,
-        username: "AnotherUser",
+        username: "ReelAngler",
         avatar_url: undefined,
         memberSince: "2024-01-02 09:00",
         likedPosts: new Set(),
     },
+    {
+        id: 3,
+        username: "ANewbieNemo",
+        avatar_url: undefined,
+        memberSince: "2024-01-04 08:30",
+        likedPosts: new Set(),
+    },
+    {
+        id: 4,
+        username: "ProBaiter",
+        avatar_url: undefined,
+        memberSince: "2024-01-05 10:45",
+        likedPosts: new Set(),
+    },
+    {
+        id: 5,
+        username: "MasterAngler",
+        avatar_url: undefined,
+        memberSince: "2024-01-06 13:15",
+        likedPosts: new Set(),
+    },
 ];
+
 
 // Function to find a user by username
 function findUserByUsername(username) {
