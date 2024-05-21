@@ -189,6 +189,7 @@ app.get("/logout", (req, res) => {
     });
 });
 app.post("/delete/:id", isAuthenticated, (req, res) => {
+    console.log("POST /delete/:id");
     // TODO: Delete a post if the current user is the owner
     const postId = parseInt(req.params.id, 10);
     const user = getCurrentUser(req);
@@ -272,7 +273,7 @@ function addUser(username) {
 
 // Middleware to check if user is authenticated
 function isAuthenticated(req, res, next) {
-    console.log(req.session.userId);
+    console.log("userID " + req.session.userId);
     if (req.session.userId) {
         next();
     } else {
