@@ -380,10 +380,19 @@ function addPost(title, content, user) {
         title,
         content,
         username: user.username,
-        timestamp: new Date().toISOString(),
+        timestamp: formatDate(new Date()),
         likes: 0,
     };
     posts.push(newPost);
+}
+
+function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
 }
 
 // Function to generate an image avatar
