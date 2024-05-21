@@ -34,9 +34,8 @@ h2 {
     align-items: center;
 }
 
-.new-post .emoji-button,
-.new-post .post-button {
-    background-color: #007bff;
+.new-post .emoji-button {
+    background-color: #4AD988;
     color: white;
     border: none;
     border-radius: 5px;
@@ -44,9 +43,21 @@ h2 {
     cursor: pointer;
 }
 
+.new-post .post-button {
+    background-color: #4AD988;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    width: 86%;
+    height: 37.5px;
+    margin-left: 5px;
+}
+
 .new-post .emoji-button:hover,
 .new-post .post-button:hover {
-    background-color: #0056b3;
+    background-color: #0E592F;
 }
 
 .new-post .emoji-panel {

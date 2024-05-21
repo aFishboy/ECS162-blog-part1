@@ -50,14 +50,9 @@
     cursor: pointer;
     font-size: 1em;
     padding: 0;
-    color: #b5d9ff;
+    color: #4AD988;
 }
 
 .post-actions button:hover {
-    color: #116cce;
-}
-/*
-.like-button, 
-.delete-button {
-
+    color: #0E592F;
 }
