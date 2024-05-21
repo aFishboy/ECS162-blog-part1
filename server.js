@@ -162,6 +162,7 @@ app.get("/profile", isAuthenticated, (req, res) => {
     // TODO: Render profile page
     const user = getCurrentUser(req);
     const userPosts = posts.filter((post) => post.username === user.username);
+    user.posts = userPosts;
     res.render("profile", { user, posts: userPosts });
 });
 app.get("/avatar/:username", handleAvatar);
