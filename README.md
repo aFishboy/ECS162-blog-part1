@@ -12,7 +12,7 @@ nodemon server.js
 
 ### Necessary Installations
 
-npm init -y
-npm install express express-handlebars
-npm install express-session
+npm init -y  
+npm install express express-handlebars  
+npm install express-session  
 npm install canvas
