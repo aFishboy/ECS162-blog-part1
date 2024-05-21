@@ -51,6 +51,13 @@ app.engine(
                 }
                 return options.inverse(this);
             },
+            likedByUser: function (postID, userLikedPosts, options) {
+                console.log("🚀 ~ userLikedPosts:", userLikedPosts)
+                if (userLikedPosts && userLikedPosts.has(postID)) {
+                    return options.fn(this);
+                }
+                return options.inverse(this);
+            },
         },
     })
 );

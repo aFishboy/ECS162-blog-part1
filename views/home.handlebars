@@ -7,7 +7,7 @@
 <section class="content-container">
     {{#if loggedIn}}
         <section class="new-post">
-            <h2>Create a new {{postNeoType}}</h2>
+            <h2>Make a new {{postNeoType}}</h2>
             <form action="/posts" method="POST">
                 <input type="text" name="title" placeholder="Title" required>
                 <textarea name="content" placeholder="What's on your mind {{user.username}}?" required></textarea>
@@ -29,7 +29,7 @@
         {{#if posts.length}}
             <ul>
                 {{#each posts}}
-                    <li>{{> post this user=../user}}</li>
+                    <li>{{> post this user=../user postNeoType=../postNeoType}}</li>
                 {{/each}}
             </ul>
         {{else}}

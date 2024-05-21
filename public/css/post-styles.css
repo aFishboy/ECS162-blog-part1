@@ -56,3 +56,11 @@
 .post-actions button:hover {
     color: #0E592F;
 }
+
+.post-actions .liked-by-user {
+    color: red;
+}
+
+.post-actions .liked-by-user:hover  {
+    color: rgb(126, 0, 0);
+}

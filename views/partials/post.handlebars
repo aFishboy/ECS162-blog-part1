@@ -2,7 +2,6 @@
 
 <link rel="stylesheet" href="/css/post-styles.css">  
 
-
 <div class="post">
     <div class="post-avatar">
         <img src="/avatar/{{username}}" alt="User Avatar">
@@ -20,9 +19,13 @@
                     {{#ifCond this.username user.username}}
                         <button class="delete-button" data-id="{{id}}" onclick="handleDeleteClick(event)"><i class="fas fa-trash-alt"></i></button>
                     {{else}}
-                        <button class="like-button" data-id="{{id}}" onclick="handleLikeClick(event)"><i class="fas fa-heart"></i></button>
+                        {{#likedByUser this.id user.likedPosts}}
+                            <button class="like-button liked-by-user" data-id="{{id}}" onclick="handleLikeClick(event)"><i class="fas fa-heart"></i></button>    
+                        {{else}}
+                            <button class="like-button" data-id="{{id}}" onclick="handleLikeClick(event)"><i class="fas fa-heart"></i></button>
+                        {{/likedByUser}}
                     {{/ifCond}}
-                    {{likes}} Likes - Posted by {{username}} on {{timestamp}}
+                    {{likes}} Likes - {{postNeoType}}ed by {{username}} on {{timestamp}}
                 </p>
             </div>
         </div>        
