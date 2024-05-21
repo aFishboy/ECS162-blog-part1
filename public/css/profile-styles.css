@@ -38,7 +38,12 @@
 
 .user-posts h2 {
     text-align: center;
+    background-color: #0B688C;
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
 }
+
 
 .user-posts ul {
     list-style: none;
