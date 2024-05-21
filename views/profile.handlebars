@@ -19,11 +19,11 @@
         <!-- you can call posts tweets, or truths, or whatever, these are neologisms. Choose your own new in server.js -->
         <h2>Your {{{postNeoType}}}s</h2>
         
-        <!-- you'll need to make this conditaionl and #each expression work -->
+        <!-- you'll need to make this conditional and #each expression work -->
         {{#if user.posts.length}}
             <ul>
                 {{#each user.posts}}
-                    <li>{{> post this}}</li>
+                    <li>{{> post this user=../user}}</li>
                 {{/each}}
             </ul>
         {{else}}
@@ -32,12 +32,3 @@
         {{/if}}
     </div>
 </section>
-
-
-<script>
-    function handleDeleteClick(event) {
-        const postId = event.target.getAttribute('data-id');
-        fetch(`/delete/${postId}`, { method: 'POST' })
-            .then(() => window.location.reload());
-    }
-</script>
