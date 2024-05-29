@@ -2,14 +2,20 @@ const express = require("express");
 const expressHandlebars = require("express-handlebars");
 const session = require("express-session");
 const canvas = require("canvas");
-require("dotenv").config();
+const dotenv = require("dotenv");
+const passport = require("passport");
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Configuration and Setup
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+dotenv.config();
 
 const app = express();
 const PORT = 3000;
+
+const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -93,6 +99,27 @@ app.use((req, res, next) => {
 app.use(express.static("public")); // Serve static files
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies (as sent by HTML forms)
 app.use(express.json()); // Parse JSON bodies (as sent by API clients)
+
+passport.use(
+    new GoogleStrategy(
+        {
+            clientID: CLIENT_ID,
+            clientSecret: CLIENT_SECRET,
+            callbackURL: `http://localhost:${PORT}/auth/google/callback`,
+        },
+        (token, tokenSecret, profile, done) => {
+            return done(null, profile);
+        }
+    )
+);
+
+passport.serializeUser((user, done) => {
+    done(null, user);
+});
+
+passport.deserializeUser((obj, done) => {
+    done(null, obj);
+});
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Routes
