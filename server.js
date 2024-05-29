@@ -121,6 +121,9 @@ passport.deserializeUser((obj, done) => {
     done(null, obj);
 });
 
+app.use(passport.initialize());
+app.use(passport.session());
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Routes
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -145,6 +148,13 @@ app.get("/register", (req, res) => {
     }
 });
 
+app.get("/registerUsername", (req, res) => {
+    res.render("registerUsername", {
+        username: req.query.username,
+        error: req.query.error,
+    });
+});
+
 // Login route GET route is used for error response from login
 //
 app.get("/login", (req, res) => {
@@ -156,6 +166,33 @@ app.get("/login", (req, res) => {
 app.get("/error", (req, res) => {
     res.render("error");
 });
+
+// Google OAuth login route
+app.get(
+    "/auth/google",
+    passport.authenticate("google", { scope: ["profile"] })
+);
+
+// Google OAuth callback route
+app.get(
+    "/auth/google/callback",
+    passport.authenticate("google", { failureRedirect: "/login" }),
+    async (req, res) => {
+        const googleId = req.user.id;
+        const user = await findUserByGoogleId(googleId);
+
+        if (user) {
+            // User exists, log them in
+            req.session.userId = user.id;
+            req.session.loggedIn = true;
+            res.redirect("/");
+        } else {
+            // User does not exist, redirect to register username
+            req.session.googleId = googleId; // Store Google ID in session to use in registration
+            res.redirect("/registerUsername");
+        }
+    }
+);
 
 // Additional routes that you must implement
 
@@ -204,7 +241,7 @@ app.get("/profile", isAuthenticated, (req, res) => {
 app.get("/avatar/:username", handleAvatar);
 
 //Credit Dr. Posnett in class
-app.post("/register", registerUser);
+app.post("/registerUsername", registerUser);
 
 app.get("/emoji", async (req, res) => {
     try {
