@@ -193,7 +193,6 @@ app.get("/emoji", async (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-    // TODO: Login a user
     const { username } = req.body;
     const user = findUserByUsername(username);
     if (user) {

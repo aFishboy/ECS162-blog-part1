@@ -1,37 +1,20 @@
 {{! Use the main layout }}
 {{!< main }}
 
-<link rel="stylesheet" href="/css/login-register.css">
+<link rel="stylesheet" href="/css/login-register.css">  
+
 
 <div class="container">
     <div class="login-register-wrapper">
         <div class="login-area">
-            <h2>Login</h2>
+            <h2>Login with Google</h2>
             {{#if loginError}}
                 <p class="error">{{loginError}}</p>
             {{/if}}
-            <form action="/login" method="POST">
-                <label for="login-username">Username:</label>
-                <input type="text" id="login-username" name="username" required>
-                <button type="submit">Login</button>
-            </form>
-        </div>
-
-        <div class="or-divider">- OR -</div>
-
-        <div class="register-area">
-            <h2>Register</h2>
-            {{#if regError}}
-                <p class="error">{{regError}}</p>
-            {{/if}}
-            {{#if successReg}}
-                <p class="successReg">{{successReg}}</p>
-            {{/if}}
-            <form action="/register" method="POST">
-                <label for="register-username">Username:</label>
-                <input type="text" id="register-username" name="username" required>
-                <button type="submit">Register</button>
-            </form>
+            <button class="login-button" type="submit">Login with Google</button>
         </div>
     </div>
 </div>
+
+<script src="/scripts/login.js"></script>
+
