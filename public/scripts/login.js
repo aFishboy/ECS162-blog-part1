@@ -1,24 +1,15 @@
 const button = document.querySelector(".login-button");
 button.addEventListener("click", async () => {
     try {
-        const response = await fetch("/login", {
-            method: "POST",
-            body: JSON.stringify({}),
-            headers: {
-                "Content-Type": "application/json",
-            },
+        const response = await fetch("/auth/google", {
+            method: "GET",
         });
+
         if (response.redirected) {
-            // Check if the response was redirected
-            if (response.url === "/") {
-                // Redirect to the home page if login was successful
-                window.location.href = "/";
-            } else {
-                // Redirect to the login page with error message if login failed
-                window.location.href = "/login?error=Invalid+username";
-            }
+            // Redirect to the provided URL
+            window.location.href = response.url;
         } else {
-            // Handle other cases (if needed)
+            // Handle cases where no redirection occurs
             console.log(
                 "Login request was successful, but no redirection occurred"
             );
