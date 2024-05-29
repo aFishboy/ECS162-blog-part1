@@ -194,13 +194,14 @@ app.post("/posts", async (req, res) => {
     const { title, content } = req.body;
     const user = req.session.userId ? await db.get('SELECT * FROM users WHERE id = ?', req.session.userId) : null;
     if (user) {
-        await db.run('INSERT INTO posts (title, content, username, timestamp, likes) VALUES (?, ?, ?, ?, ?)', [title, content, user.username, new Date().toISOString(), 0]);
+        await db.run('INSERT INTO posts (title, content, username, timestamp, likes) VALUES (?, ?, ?, ?, ?)', [title, content, user.username, formatDate(new Date()), 0]);
         res.redirect("/");
     } else {
         res.redirect("/login");
     }
 });
 
+/*
 app.post("/like/:id", (req, res) => {
     // TODO: Update post likes
     const postId = parseInt(req.params.id, 10);
@@ -216,7 +217,36 @@ app.post("/like/:id", (req, res) => {
         }
         res.redirect("/");
     }
+}); */
+
+app.post("/like/:id", async (req, res) => {
+    if (!req.session.userId) {
+        return res.redirect("/login");
+    }
+
+    const postId = parseInt(req.params.id, 10);
+    const userId = req.session.userId;
+
+    try {
+        //check if user has liked post
+        const exists = await db.get("SELECT 1 FROM user_likes WHERE user_id = ? AND post_id = ?", userId, postId);
+        if (exists) {
+            // unlike
+            await db.run("DELETE FROM user_likes WHERE user_id = ? AND post_id = ?", userId, postId);
+            await db.run("UPDATE posts SET likes = likes - 1 WHERE id = ?", postId);
+        } else {
+            //like
+            await db.run("INSERT INTO user_likes (user_id, post_id) VALUES (?, ?)", userId, postId);
+            await db.run("UPDATE posts SET likes = likes + 1 WHERE id = ?", postId);
+        }
+        res.redirect("/");
+    } catch (error) {
+        console.error("Error processing like:", error);
+        res.redirect("/error");
+    }
 });
+
+
 /* old profile
 app.get("/profile", isAuthenticated, (req, res) => {
     const user = getCurrentUser(req);
