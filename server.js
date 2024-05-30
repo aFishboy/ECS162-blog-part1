@@ -128,10 +128,19 @@ app.get("/", (req, res) => {
 */
 
 app.get("/", async (req, res) => {
-    const posts = await db.all('SELECT * FROM posts ORDER BY timestamp DESC');
+    const sort = req.query.sort || 'recent';  // Default to 'recent' if no sort specified
+    let posts;
+
+    if (sort === 'likes') {
+        posts = await db.all('SELECT * FROM posts ORDER BY likes DESC, timestamp DESC');
+    } else {
+        // Most recent
+        posts = await db.all('SELECT * FROM posts ORDER BY timestamp DESC');
+    }
     const user = req.session.userId ? await db.get('SELECT * FROM users WHERE id = ?', req.session.userId) : {};
-    res.render("home", { posts, user });
+    res.render("home", { posts, user, sort });  // Pass the sort parameter to the template
 });
+
 
 // Register GET route is used for error response from registration
 // or to display success from registration
