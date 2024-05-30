@@ -4,8 +4,7 @@ const session = require("express-session");
 const canvas = require("canvas");
 const dotenv = require("dotenv");
 const passport = require("passport");
-require('./auth')
-
+require("./auth");
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Configuration and Setup
@@ -56,8 +55,8 @@ app.engine(
                 }
                 return options.inverse(this);
             },
-            likedByUser: function (postID, userLikedPosts, options) {
-                if (userLikedPosts && userLikedPosts.has(postID)) {
+            likedByUser: function (postId, userLikedPosts, options) {
+                if (userLikedPosts && userLikedPosts.has(postId)) {
                     return options.fn(this);
                 }
                 return options.inverse(this);
@@ -101,7 +100,6 @@ app.use(express.static("public")); // Serve static files
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies (as sent by HTML forms)
 app.use(express.json()); // Parse JSON bodies (as sent by API clients)
 
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Routes
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -113,7 +111,6 @@ app.use(express.json()); // Parse JSON bodies (as sent by API clients)
 app.get("/", (req, res) => {
     const posts = getPosts();
     const user = getCurrentUser(req) || {};
-    console.log("🚀 ~ app.get ~ user:", user);
     res.render("home", { posts, user });
 });
 
@@ -157,9 +154,10 @@ app.get(
     "/auth/google/callback",
     passport.authenticate("google", { failureRedirect: "/login" }),
     async (req, res) => {
-        const googleId = req.user.id;
-        // const user = await findUserByGoogleId(googleId);
-        const user = null;
+        const googleId = req.user.id; // Accessing the Google ID from req.user
+        req.session.googleId = googleId;
+        const user = findUserById(googleId); // fix later!!!!!!!!!!!!!!!!!!!!!!!!!
+        console.log("googleId", googleId);
 
         if (user) {
             // User exists, log them in
@@ -377,6 +375,7 @@ function findUserByUsername(username) {
 // Function to find a user by user ID
 function findUserById(userId) {
     // TODO: Return user object if found, otherwise return undefined
+    console.log("🚀 ~ findUserById ~ user.id  userID:", userId);
     return users.find((user) => user.id === userId);
 }
 
@@ -422,8 +421,7 @@ function loginUser(req, res) {
     const username = req.body.username;
     const user = findUserByUsername(username);
     if (user) {
-        //Successful login
-        req.session.userID = user.id;
+        req.session.userId = user.id;
         req.session.loggedIn = true;
         res.redirect("/");
     } else {
@@ -476,11 +474,8 @@ function handleAvatar(req, res) {
 // Function to get the current user from session
 function getCurrentUser(req) {
     // TODO: Return the user object if the session user ID matches
-    console.log("🚀 ~ getCurrentUser ~ req.session:", req.session);
-    console.log(
-        "🚀 ~ getCurrentUser ~ findUserById(req.session.userId):",
-        findUserById(req.session.userId)
-    );
+    console.log("🚀 ~ getCurrentUser ~ req.session:", req.session.userId);
+
     return findUserById(req.session.userId);
 }
 
