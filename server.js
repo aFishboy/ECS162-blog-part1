@@ -4,7 +4,8 @@ const session = require("express-session");
 const canvas = require("canvas");
 const dotenv = require("dotenv");
 const passport = require("passport");
-const GoogleStrategy = require("passport-google-oauth20").Strategy;
+require('./auth')
+
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Configuration and Setup
@@ -13,9 +14,6 @@ dotenv.config();
 
 const app = express();
 const PORT = 3000;
-
-const CLIENT_ID = process.env.CLIENT_ID;
-const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -84,6 +82,9 @@ app.use(
     })
 );
 
+app.use(passport.initialize());
+app.use(passport.session());
+
 // Replace any of these variables below with constants for your application. These variables
 // should be used in your template files.
 //
@@ -100,29 +101,6 @@ app.use(express.static("public")); // Serve static files
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies (as sent by HTML forms)
 app.use(express.json()); // Parse JSON bodies (as sent by API clients)
 
-passport.use(
-    new GoogleStrategy(
-        {
-            clientID: CLIENT_ID,
-            clientSecret: CLIENT_SECRET,
-            callbackURL: `http://localhost:${PORT}/auth/google/callback`,
-        },
-        (token, tokenSecret, profile, done) => {
-            return done(null, profile);
-        }
-    )
-);
-
-passport.serializeUser((user, done) => {
-    done(null, user);
-});
-
-passport.deserializeUser((obj, done) => {
-    done(null, obj);
-});
-
-app.use(passport.initialize());
-app.use(passport.session());
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Routes
@@ -133,9 +111,9 @@ app.use(passport.session());
 // template
 //
 app.get("/", (req, res) => {
-    console.log(req.session);
     const posts = getPosts();
     const user = getCurrentUser(req) || {};
+    console.log("🚀 ~ app.get ~ user:", user);
     res.render("home", { posts, user });
 });
 
@@ -251,7 +229,6 @@ app.get("/emoji", async (req, res) => {
             `https://emoji-api.com/emojis?access_key=${process.env.EMOJI_API_KEY}`
         );
         const emojis = await response.json();
-        console.log("🚀 ~ app.get ~ emojis:", emojis);
         res.json(emojis);
     } catch (error) {
         console.error("Error fetching emojis:", error);
@@ -499,6 +476,11 @@ function handleAvatar(req, res) {
 // Function to get the current user from session
 function getCurrentUser(req) {
     // TODO: Return the user object if the session user ID matches
+    console.log("🚀 ~ getCurrentUser ~ req.session:", req.session);
+    console.log(
+        "🚀 ~ getCurrentUser ~ findUserById(req.session.userId):",
+        findUserById(req.session.userId)
+    );
     return findUserById(req.session.userId);
 }
 
