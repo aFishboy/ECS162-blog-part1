@@ -4,8 +4,8 @@ const session = require("express-session");
 const canvas = require("canvas");
 const dotenv = require("dotenv");
 const passport = require("passport");
-const sqlite = require('sqlite');
-const sqlite3 = require('sqlite3');
+const sqlite = require("sqlite");
+const sqlite3 = require("sqlite3");
 require("./auth");
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -13,17 +13,16 @@ require("./auth");
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 //db setup
-const dbFileName = 'finster.db';
+const dbFileName = "finster.db";
 let db;
 
 async function connectToDatabase() {
     db = await sqlite.open({ filename: dbFileName, driver: sqlite3.Database });
 }
 
-connectToDatabase().catch(err => {
-    console.error('Error connecting to database:', err);
+connectToDatabase().catch((err) => {
+    console.error("Error connecting to database:", err);
 });
-
 
 dotenv.config();
 
@@ -133,19 +132,22 @@ app.get("/", (req, res) => {
 */
 
 app.get("/", async (req, res) => {
-    const sort = req.query.sort || 'recent';  // Default to 'recent' if no sort specified
+    const sort = req.query.sort || "recent"; // Default to 'recent' if no sort specified
     let posts;
 
-    if (sort === 'likes') {
-        posts = await db.all('SELECT * FROM posts ORDER BY likes DESC, timestamp DESC');
+    if (sort === "likes") {
+        posts = await db.all(
+            "SELECT * FROM posts ORDER BY likes DESC, timestamp DESC"
+        );
     } else {
         // Most recent
-        posts = await db.all('SELECT * FROM posts ORDER BY timestamp DESC');
+        posts = await db.all("SELECT * FROM posts ORDER BY timestamp DESC");
     }
-    const user = req.session.userId ? await db.get('SELECT * FROM users WHERE id = ?', req.session.userId) : {};
-    res.render("home", { posts, user, sort });  // Pass the sort parameter to the template
+    const user = req.session.userId
+        ? await db.get("SELECT * FROM users WHERE id = ?", req.session.userId)
+        : {};
+    res.render("home", { posts, user, sort }); // Pass the sort parameter to the template
 });
-
 
 // Register GET route is used for error response from registration
 // or to display success from registration
@@ -182,14 +184,13 @@ app.get(
     passport.authenticate("google", { scope: ["profile"] })
 );
 
-
 app.get(
     "/auth/google/callback",
     passport.authenticate("google", { failureRedirect: "/login" }),
     async (req, res) => {
         const googleId = req.user.id; // Accessing the Google ID from req.user
         req.session.googleId = googleId;
-        const user = findUserByGoogleId(googleId); // fix later!!!!!!!!!!!!!!!!!!!!!!!!!
+        const user = await findUserByGoogleId(googleId); // fix later!!!!!!!!!!!!!!!!!!!!!!!!!
         console.log("user in callback", user);
 
         if (user) {
@@ -205,9 +206,11 @@ app.get(
     }
 );
 
-
 app.get("/post/:id", async (req, res) => {
-    const post = await db.get('SELECT * FROM posts WHERE id = ?', req.params.id);
+    const post = await db.get(
+        "SELECT * FROM posts WHERE id = ?",
+        req.params.id
+    );
     if (post) {
         res.render("postDetail", { post });
     } else {
@@ -215,18 +218,21 @@ app.get("/post/:id", async (req, res) => {
     }
 });
 
-
 app.post("/posts", async (req, res) => {
     const { title, content } = req.body;
-    const user = req.session.userId ? await db.get('SELECT * FROM users WHERE id = ?', req.session.userId) : null;
+    const user = req.session.userId
+        ? await db.get("SELECT * FROM users WHERE id = ?", req.session.userId)
+        : null;
     if (user) {
-        await db.run('INSERT INTO posts (title, content, username, timestamp, likes) VALUES (?, ?, ?, ?, ?)', [title, content, user.username, formatDate(new Date()), 0]);
+        await db.run(
+            "INSERT INTO posts (title, content, username, timestamp, likes) VALUES (?, ?, ?, ?, ?)",
+            [title, content, user.username, formatDate(new Date()), 0]
+        );
         res.redirect("/");
     } else {
         res.redirect("/login");
     }
 });
-
 
 app.post("/like/:id", async (req, res) => {
     if (!req.session.userId) {
@@ -238,15 +244,33 @@ app.post("/like/:id", async (req, res) => {
 
     try {
         //check if user has liked post
-        const exists = await db.get("SELECT 1 FROM user_likes WHERE user_id = ? AND post_id = ?", userId, postId);
+        const exists = await db.get(
+            "SELECT 1 FROM user_likes WHERE user_id = ? AND post_id = ?",
+            userId,
+            postId
+        );
         if (exists) {
             // unlike
-            await db.run("DELETE FROM user_likes WHERE user_id = ? AND post_id = ?", userId, postId);
-            await db.run("UPDATE posts SET likes = likes - 1 WHERE id = ?", postId);
+            await db.run(
+                "DELETE FROM user_likes WHERE user_id = ? AND post_id = ?",
+                userId,
+                postId
+            );
+            await db.run(
+                "UPDATE posts SET likes = likes - 1 WHERE id = ?",
+                postId
+            );
         } else {
             //like
-            await db.run("INSERT INTO user_likes (user_id, post_id) VALUES (?, ?)", userId, postId);
-            await db.run("UPDATE posts SET likes = likes + 1 WHERE id = ?", postId);
+            await db.run(
+                "INSERT INTO user_likes (user_id, post_id) VALUES (?, ?)",
+                userId,
+                postId
+            );
+            await db.run(
+                "UPDATE posts SET likes = likes + 1 WHERE id = ?",
+                postId
+            );
         }
         res.redirect("/");
     } catch (error) {
@@ -255,11 +279,15 @@ app.post("/like/:id", async (req, res) => {
     }
 });
 
-
-
 app.get("/profile", isAuthenticated, async (req, res) => {
-    const user = await db.get('SELECT * FROM users WHERE id = ?', req.session.userId);
-    const userPosts = await db.all('SELECT * FROM posts WHERE username = ? ORDER BY timestamp DESC', user.username);
+    const user = await db.get(
+        "SELECT * FROM users WHERE id = ?",
+        req.session.userId
+    );
+    const userPosts = await db.all(
+        "SELECT * FROM posts WHERE username = ? ORDER BY timestamp DESC",
+        user.username
+    );
     user.posts = userPosts;
     res.render("profile", { user, posts: userPosts });
 });
@@ -281,10 +309,12 @@ app.get("/emoji", async (req, res) => {
     }
 });
 
-
 app.post("/login", async (req, res) => {
     const { username } = req.body;
-    const user = await db.get('SELECT * FROM users WHERE username = ?', username);
+    const user = await db.get(
+        "SELECT * FROM users WHERE username = ?",
+        username
+    );
     if (user) {
         req.session.userId = user.id;
         req.session.loggedIn = true;
@@ -294,21 +324,32 @@ app.post("/login", async (req, res) => {
     }
 });
 
-app.get("/logout", (req, res) => {
-    // TODO: Logout the user
-    req.logout();
-    req.session.destroy(() => {
-        res.redirect("/");
+app.get("/logout", (req, res, next) => {
+    // Logout the user with a callback function to handle errors
+    req.logout(function (err) {
+        if (err) {
+            return next(err);
+        }
+
+        // Destroy the session and redirect to the home page
+        req.session.destroy(() => {
+            res.redirect("/");
+        });
     });
 });
 
-
 app.post("/delete/:id", isAuthenticated, async (req, res) => {
     const postId = parseInt(req.params.id, 10);
-    const user = await db.get('SELECT * FROM users WHERE id = ?', req.session.userId);
-    const post = await db.get('SELECT * FROM posts WHERE id = ? AND username = ?', [postId, user.username]);
+    const user = await db.get(
+        "SELECT * FROM users WHERE id = ?",
+        req.session.userId
+    );
+    const post = await db.get(
+        "SELECT * FROM posts WHERE id = ? AND username = ?",
+        [postId, user.username]
+    );
     if (post) {
-        await db.run('DELETE FROM posts WHERE id = ?', postId);
+        await db.run("DELETE FROM posts WHERE id = ?", postId);
     }
     res.redirect("/");
 });
@@ -430,13 +471,12 @@ function findUserById(userId) {
 }
 
 async function findUserByGoogleId(googleId) {
-    const user = await db.get(
-        "SELECT 1 FROM users WHERE hashedGoogleId = ?",
-        googleId
-    );
+    const user = await db.get("SELECT * FROM users WHERE hashedGoogleId = ?", [
+        googleId,
+    ]);
     console.log("googleId", googleId);
     console.log("user in findbygId", user);
-    return user
+    return user;
 }
 
 // Middleware to check if user is authenticated
@@ -467,10 +507,8 @@ async function registerUser(req, res) {
 async function addUser(req) {
     await db.run(
         "INSERT INTO users (username, hashedGoogleId, memberSince) VALUES (?, ?, ?)",
-        [req.body.username, req.user.id, new Date()]
+        [req.body.username, req.user.id, formatDate(new Date())]
     );
-
-    return newUser;
 }
 
 // Function to login a user
