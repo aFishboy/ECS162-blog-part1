@@ -191,7 +191,6 @@ app.get(
         const googleId = req.user.id; // Accessing the Google ID from req.user
         req.session.googleId = googleId;
         const user = await findUserByGoogleId(googleId); // fix later!!!!!!!!!!!!!!!!!!!!!!!!!
-        console.log("user in callback", user);
 
         if (user) {
             // User exists, log them in
@@ -333,9 +332,13 @@ app.get("/logout", (req, res, next) => {
 
         // Destroy the session and redirect to the home page
         req.session.destroy(() => {
-            res.redirect("/");
+            res.redirect("/googleLogout");
         });
     });
+});
+
+app.get("/googleLogout", (req, res) => {
+    res.render("googleLogout");
 });
 
 app.post("/delete/:id", isAuthenticated, async (req, res) => {
@@ -458,24 +461,25 @@ let users = [
 ];
 
 // Function to find a user by username
-function findUserByUsername(username) {
-    // TODO: Return user object if found, otherwise return undefined
-    return users.find((user) => user.username === username);
+async function findUserByUsername(username) {
+    const user = await db.get("SELECT * FROM users WHERE username = ?", [
+        username,
+    ]);
+    return user;
 }
 
 // Function to find a user by user ID
-function findUserById(userId) {
-    // TODO: Return user object if found, otherwise return undefined
-    console.log("🚀 ~ findUserById ~ user.id  userID:", userId);
-    return users.find((user) => user.id === userId);
+async function findUserById(userId) {
+    const user = await db.get("SELECT * FROM users WHERE id = ?", [
+        userId,
+    ]);
+    return user;
 }
 
 async function findUserByGoogleId(googleId) {
     const user = await db.get("SELECT * FROM users WHERE hashedGoogleId = ?", [
         googleId,
     ]);
-    console.log("googleId", googleId);
-    console.log("user in findbygId", user);
     return user;
 }
 
@@ -500,7 +504,7 @@ async function registerUser(req, res) {
         res.redirect("/register?error=Username+cannot+contain+whitespace");
     } else {
         addUser(req);
-        loginUser(req, res);
+        await loginUser(req, res);
     }
 }
 
@@ -513,16 +517,16 @@ async function addUser(req) {
 
 // Function to login a user
 //Credit Dr. Posnett in class
-function loginUser(req, res) {
+async function loginUser(req, res) {
     const username = req.body.username;
-    const user = findUserByUsername(username);
+    const user = await findUserByUsername(username);
     if (user) {
         req.session.userId = user.id;
         req.session.loggedIn = true;
         res.redirect("/");
     } else {
         //Invalid username
-        res.redirect("/login?error=Invalid+username");
+        res.redirect("/login?error=Login+failed");
     }
 }
 
@@ -569,9 +573,6 @@ function handleAvatar(req, res) {
 
 // Function to get the current user from session
 function getCurrentUser(req) {
-    // TODO: Return the user object if the session user ID matches
-    console.log("🚀 ~ getCurrentUser ~ req.session:", req.session.userId);
-
     return findUserById(req.session.userId);
 }
 
