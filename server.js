@@ -133,6 +133,7 @@ app.use(passport.session());
 // template
 //
 app.get("/", (req, res) => {
+    console.log(req.session);
     const posts = getPosts();
     const user = getCurrentUser(req) || {};
     res.render("home", { posts, user });
@@ -179,7 +180,8 @@ app.get(
     passport.authenticate("google", { failureRedirect: "/login" }),
     async (req, res) => {
         const googleId = req.user.id;
-        const user = await findUserByGoogleId(googleId);
+        // const user = await findUserByGoogleId(googleId);
+        const user = null;
 
         if (user) {
             // User exists, log them in
@@ -433,9 +435,7 @@ function registerUser(req, res) {
         res.redirect("/register?error=Username+cannot+contain+whitespace");
     } else {
         addUser(username);
-        res.redirect(
-            "/register?successReg=Account+registered+successfully.+Please+login."
-        );
+        loginUser(req, res);
     }
 }
 
@@ -444,7 +444,6 @@ function registerUser(req, res) {
 function loginUser(req, res) {
     const username = req.body.username;
     const user = findUserByUsername(username);
-
     if (user) {
         //Successful login
         req.session.userID = user.id;
