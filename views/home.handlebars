@@ -25,7 +25,15 @@
 
 
     <section class="posts-list">
-        <h2>Recent {{postNeoType}}s</h2>
+        
+        <form class="tabs">
+            <input id="t1" class="toggle" name="sorting" type="radio" {{#ifCond sort 'recent'}}checked{{/ifCond}} onclick="location.href='/?sort=recent'">
+            <label for="t1" class="btn"><h2>Recent {{postNeoType}}s</h2></label>
+            <input id="t2" class="toggle" name="sorting" type="radio" {{#ifCond sort 'likes'}}checked{{/ifCond}} onclick="location.href='/?sort=likes'">
+            <label for="t2" class="btn"><h2>Top {{postNeoType}}s</h2></label>
+        </form>
+
+
         {{#if posts.length}}
             <ul>
                 {{#each posts}}
