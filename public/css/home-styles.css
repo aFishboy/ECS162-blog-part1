@@ -116,3 +116,39 @@ h2 {
         margin: 10px 0;
     }
 }
+
+.tabs {
+    display: flex;
+    position: relative;
+    border: 3px solid #1a1a1a;
+    border-radius: 8px;
+    overflow: hidden;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.btn {
+    flex: 1;
+    padding: 20px;
+    cursor: pointer;
+    background: none;
+    color: #1a1a1a;
+    text-align: center;
+    font-size: 1.5rem;
+}
+
+input[type="radio"].toggle { /* radio code adapted from https://codepen.io/magnificode/pen/ojYJJP*/
+    display: none;
+}
+
+input[type="radio"].toggle + label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+input[type="radio"].toggle:checked + label {
+    background-color: #4AD988; 
+    color: #fff; 
+}

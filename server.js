@@ -2,11 +2,30 @@ const express = require("express");
 const expressHandlebars = require("express-handlebars");
 const session = require("express-session");
 const canvas = require("canvas");
-require("dotenv").config();
+const dotenv = require("dotenv");
+const passport = require("passport");
+const sqlite = require('sqlite');
+const sqlite3 = require('sqlite3');
+require("./auth");
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Configuration and Setup
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+//db setup
+const dbFileName = 'finster.db';
+let db;
+
+async function connectToDatabase() {
+    db = await sqlite.open({ filename: dbFileName, driver: sqlite3.Database });
+}
+
+connectToDatabase().catch(err => {
+    console.error('Error connecting to database:', err);
+});
+
+
+dotenv.config();
 
 const app = express();
 const PORT = 3000;
@@ -52,8 +71,8 @@ app.engine(
                 }
                 return options.inverse(this);
             },
-            likedByUser: function (postID, userLikedPosts, options) {
-                if (userLikedPosts && userLikedPosts.has(postID)) {
+            likedByUser: function (postId, userLikedPosts, options) {
+                if (userLikedPosts && userLikedPosts.has(postId)) {
                     return options.fn(this);
                 }
                 return options.inverse(this);
@@ -77,6 +96,9 @@ app.use(
         cookie: { secure: false }, // True if using https. Set to false for development without https
     })
 );
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Replace any of these variables below with constants for your application. These variables
 // should be used in your template files.
@@ -102,11 +124,28 @@ app.use(express.json()); // Parse JSON bodies (as sent by API clients)
 // We pass the posts and user variables into the home
 // template
 //
+/* old get
 app.get("/", (req, res) => {
     const posts = getPosts();
     const user = getCurrentUser(req) || {};
     res.render("home", { posts, user });
 });
+*/
+
+app.get("/", async (req, res) => {
+    const sort = req.query.sort || 'recent';  // Default to 'recent' if no sort specified
+    let posts;
+
+    if (sort === 'likes') {
+        posts = await db.all('SELECT * FROM posts ORDER BY likes DESC, timestamp DESC');
+    } else {
+        // Most recent
+        posts = await db.all('SELECT * FROM posts ORDER BY timestamp DESC');
+    }
+    const user = req.session.userId ? await db.get('SELECT * FROM users WHERE id = ?', req.session.userId) : {};
+    res.render("home", { posts, user, sort });  // Pass the sort parameter to the template
+});
+
 
 // Register GET route is used for error response from registration
 // or to display success from registration
@@ -116,6 +155,13 @@ app.get("/register", (req, res) => {
     } else {
         res.render("loginRegister", { successReg: req.query.successReg });
     }
+});
+
+app.get("/registerUsername", (req, res) => {
+    res.render("registerUsername", {
+        username: req.query.username,
+        error: req.query.error,
+    });
 });
 
 // Login route GET route is used for error response from login
@@ -130,8 +176,37 @@ app.get("/error", (req, res) => {
     res.render("error");
 });
 
-// Additional routes that you must implement
+// Google OAuth login route
+app.get(
+    "/auth/google",
+    passport.authenticate("google", { scope: ["profile"] })
+);
 
+// Google OAuth callback route
+app.get(
+    "/auth/google/callback",
+    passport.authenticate("google", { failureRedirect: "/login" }),
+    async (req, res) => {
+        const googleId = req.user.id; // Accessing the Google ID from req.user
+        req.session.googleId = googleId;
+        const user = findUserByGoogleId(googleId); // fix later!!!!!!!!!!!!!!!!!!!!!!!!!
+        console.log("googleId", googleId);
+
+        if (user) {
+            // User exists, log them in
+            req.session.userId = user.id;
+            req.session.loggedIn = true;
+            res.redirect("/");
+        } else {
+            // User does not exist, redirect to register username
+            req.session.googleId = googleId; // Store Google ID in session to use in registration
+            res.redirect("/registerUsername");
+        }
+    }
+);
+
+// Additional routes that you must implement
+/* old get post id
 app.get("/post/:id", (req, res) => {
     // TODO: Render post detail page
     const post = posts.find((p) => p.id === parseInt(req.params.id, 10));
@@ -140,7 +215,18 @@ app.get("/post/:id", (req, res) => {
     } else {
         res.redirect("/error");
     }
+}); */
+
+app.get("/post/:id", async (req, res) => {
+    const post = await db.get('SELECT * FROM posts WHERE id = ?', req.params.id);
+    if (post) {
+        res.render("postDetail", { post });
+    } else {
+        res.redirect("/error");
+    }
 });
+
+/*
 app.post("/posts", (req, res) => {
     // TODO: Add a new post and redirect to home
     const { title, content } = req.body;
@@ -151,7 +237,21 @@ app.post("/posts", (req, res) => {
     } else {
         res.redirect("/login");
     }
+}); */
+
+//not completely sure about this
+app.post("/posts", async (req, res) => {
+    const { title, content } = req.body;
+    const user = req.session.userId ? await db.get('SELECT * FROM users WHERE id = ?', req.session.userId) : null;
+    if (user) {
+        await db.run('INSERT INTO posts (title, content, username, timestamp, likes) VALUES (?, ?, ?, ?, ?)', [title, content, user.username, formatDate(new Date()), 0]);
+        res.redirect("/");
+    } else {
+        res.redirect("/login");
+    }
 });
+
+/*
 app.post("/like/:id", (req, res) => {
     // TODO: Update post likes
     const postId = parseInt(req.params.id, 10);
@@ -167,17 +267,55 @@ app.post("/like/:id", (req, res) => {
         }
         res.redirect("/");
     }
+}); */
+
+app.post("/like/:id", async (req, res) => {
+    if (!req.session.userId) {
+        return res.redirect("/login");
+    }
+
+    const postId = parseInt(req.params.id, 10);
+    const userId = req.session.userId;
+
+    try {
+        //check if user has liked post
+        const exists = await db.get("SELECT 1 FROM user_likes WHERE user_id = ? AND post_id = ?", userId, postId);
+        if (exists) {
+            // unlike
+            await db.run("DELETE FROM user_likes WHERE user_id = ? AND post_id = ?", userId, postId);
+            await db.run("UPDATE posts SET likes = likes - 1 WHERE id = ?", postId);
+        } else {
+            //like
+            await db.run("INSERT INTO user_likes (user_id, post_id) VALUES (?, ?)", userId, postId);
+            await db.run("UPDATE posts SET likes = likes + 1 WHERE id = ?", postId);
+        }
+        res.redirect("/");
+    } catch (error) {
+        console.error("Error processing like:", error);
+        res.redirect("/error");
+    }
 });
+
+
+/* old profile
 app.get("/profile", isAuthenticated, (req, res) => {
     const user = getCurrentUser(req);
     const userPosts = posts.filter((post) => post.username === user.username);
     user.posts = userPosts;
     res.render("profile", { user, posts: userPosts });
+}); */
+
+app.get("/profile", isAuthenticated, async (req, res) => {
+    const user = await db.get('SELECT * FROM users WHERE id = ?', req.session.userId);
+    const userPosts = await db.all('SELECT * FROM posts WHERE username = ? ORDER BY timestamp DESC', user.username);
+    user.posts = userPosts;
+    res.render("profile", { user, posts: userPosts });
 });
+
 app.get("/avatar/:username", handleAvatar);
 
 //Credit Dr. Posnett in class
-app.post("/register", registerUser);
+app.post("/registerUsername", registerUser);
 
 app.get("/emoji", async (req, res) => {
     try {
@@ -185,7 +323,6 @@ app.get("/emoji", async (req, res) => {
             `https://emoji-api.com/emojis?access_key=${process.env.EMOJI_API_KEY}`
         );
         const emojis = await response.json();
-        console.log("🚀 ~ app.get ~ emojis:", emojis);
         res.json(emojis);
     } catch (error) {
         console.error("Error fetching emojis:", error);
@@ -193,6 +330,7 @@ app.get("/emoji", async (req, res) => {
     }
 });
 
+/*
 app.post("/login", (req, res) => {
     const { username } = req.body;
     const user = findUserByUsername(username);
@@ -203,13 +341,27 @@ app.post("/login", (req, res) => {
     } else {
         res.redirect("/login?error=Invalid+username");
     }
+}); */
+
+app.post("/login", async (req, res) => {
+    const { username } = req.body;
+    const user = await db.get('SELECT * FROM users WHERE username = ?', username);
+    if (user) {
+        req.session.userId = user.id;
+        req.session.loggedIn = true;
+        res.redirect("/");
+    } else {
+        res.redirect("/login?error=Invalid+username");
+    }
 });
+
 app.get("/logout", (req, res) => {
     // TODO: Logout the user
     req.session.destroy(() => {
         res.redirect("/");
     });
 });
+/*
 app.post("/delete/:id", isAuthenticated, (req, res) => {
     const postId = parseInt(req.params.id, 10);
     const user = getCurrentUser(req);
@@ -218,6 +370,16 @@ app.post("/delete/:id", isAuthenticated, (req, res) => {
     );
     if (postIndex >= 0) {
         posts.splice(postIndex, 1);
+    }
+    res.redirect("/");
+}); */
+
+app.post("/delete/:id", isAuthenticated, async (req, res) => {
+    const postId = parseInt(req.params.id, 10);
+    const user = await db.get('SELECT * FROM users WHERE id = ?', req.session.userId);
+    const post = await db.get('SELECT * FROM posts WHERE id = ? AND username = ?', [postId, user.username]);
+    if (post) {
+        await db.run('DELETE FROM posts WHERE id = ?', postId);
     }
     res.redirect("/");
 });
@@ -334,7 +496,12 @@ function findUserByUsername(username) {
 // Function to find a user by user ID
 function findUserById(userId) {
     // TODO: Return user object if found, otherwise return undefined
+    console.log("🚀 ~ findUserById ~ user.id  userID:", userId);
     return users.find((user) => user.id === userId);
+}
+
+function findUserByGoogleId(googleId) {
+    
 }
 
 // Function to add a new user
@@ -369,9 +536,7 @@ function registerUser(req, res) {
         res.redirect("/register?error=Username+cannot+contain+whitespace");
     } else {
         addUser(username);
-        res.redirect(
-            "/register?successReg=Account+registered+successfully.+Please+login."
-        );
+        loginUser(req, res);
     }
 }
 
@@ -380,10 +545,8 @@ function registerUser(req, res) {
 function loginUser(req, res) {
     const username = req.body.username;
     const user = findUserByUsername(username);
-
     if (user) {
-        //Successful login
-        req.session.userID = user.id;
+        req.session.userId = user.id;
         req.session.loggedIn = true;
         res.redirect("/");
     } else {
@@ -436,6 +599,8 @@ function handleAvatar(req, res) {
 // Function to get the current user from session
 function getCurrentUser(req) {
     // TODO: Return the user object if the session user ID matches
+    console.log("🚀 ~ getCurrentUser ~ req.session:", req.session.userId);
+
     return findUserById(req.session.userId);
 }
 

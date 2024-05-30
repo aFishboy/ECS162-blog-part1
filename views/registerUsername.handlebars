@@ -1,0 +1,23 @@
+{{! Use the main layout }}
+{{!< main }}
+
+<link rel="stylesheet" href="/css/register-styles.css">
+
+<div class="container">
+    <div class="register-wrapper">
+        <div class="register-area">
+            <h2>Register</h2>
+            {{#if regError}}
+                <p class="error">{{regError}}</p>
+            {{/if}}
+            {{#if successReg}}
+                <p class="successReg">{{successReg}}</p>
+            {{/if}}
+            <form action="/registerUsername" method="POST">
+                <label for="register-username">Username:</label>
+                <input type="text" id="register-username" name="username" required>
+                <button type="submit">Register</button>
+            </form>
+        </div>
+    </div>
+</div>

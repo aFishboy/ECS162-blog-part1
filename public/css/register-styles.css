@@ -1,0 +1,93 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #F9F9F9;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #F9F9F9;
+}
+
+.register-wrapper {
+    display: flex;
+    justify-content: space-around;
+    width: 800px;
+    max-width: 100%;
+}
+
+.register-area {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 45%;
+    margin: 0 10px;
+}
+
+.register-area h2 {
+    margin-bottom: 10px;
+}
+
+.register-area form {
+    display: flex;
+    flex-direction: column;
+}
+
+.register-area label {
+    margin-bottom: 5px;
+}
+
+.register-area input {
+    margin-bottom: 10px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.register-area button {
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: #4AD988;
+    color: white;
+    cursor: pointer;
+}
+
+.register-area button:hover {
+    background-color: #0E592F;
+}
+
+.error {
+    color: red;
+    margin-bottom: 10px;
+}
+
+.successReg {
+    color: rgb(0, 0, 0);
+    margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+    .register-wrapper {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .register-area {
+        width: 80%;
+        margin-bottom: 20px;
+    }
+
+    .or-divider {
+        display: block;
+        font-size: 18px;
+        font-weight: bold;
+        margin: 20px 0;
+        text-align: center;
+    }
+}
