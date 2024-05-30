@@ -2,10 +2,11 @@ const express = require("express");
 const expressHandlebars = require("express-handlebars");
 const session = require("express-session");
 const canvas = require("canvas");
-require('dotenv').config();
+const dotenv = require("dotenv");
+const passport = require("passport");
 const sqlite = require('sqlite');
 const sqlite3 = require('sqlite3');
-
+require("./auth");
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Configuration and Setup
@@ -24,6 +25,7 @@ connectToDatabase().catch(err => {
 });
 
 
+dotenv.config();
 
 const app = express();
 const PORT = 3000;
@@ -69,8 +71,8 @@ app.engine(
                 }
                 return options.inverse(this);
             },
-            likedByUser: function (postID, userLikedPosts, options) {
-                if (userLikedPosts && userLikedPosts.has(postID)) {
+            likedByUser: function (postId, userLikedPosts, options) {
+                if (userLikedPosts && userLikedPosts.has(postId)) {
                     return options.fn(this);
                 }
                 return options.inverse(this);
@@ -94,6 +96,9 @@ app.use(
         cookie: { secure: false }, // True if using https. Set to false for development without https
     })
 );
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Replace any of these variables below with constants for your application. These variables
 // should be used in your template files.
@@ -145,11 +150,18 @@ app.get("/", async (req, res) => {
 // Register GET route is used for error response from registration
 // or to display success from registration
 app.get("/register", (req, res) => {
-    if (req.query.error){
+    if (req.query.error) {
         res.render("loginRegister", { regError: req.query.error });
     } else {
         res.render("loginRegister", { successReg: req.query.successReg });
     }
+});
+
+app.get("/registerUsername", (req, res) => {
+    res.render("registerUsername", {
+        username: req.query.username,
+        error: req.query.error,
+    });
 });
 
 // Login route GET route is used for error response from login
@@ -163,6 +175,35 @@ app.get("/login", (req, res) => {
 app.get("/error", (req, res) => {
     res.render("error");
 });
+
+// Google OAuth login route
+app.get(
+    "/auth/google",
+    passport.authenticate("google", { scope: ["profile"] })
+);
+
+// Google OAuth callback route
+app.get(
+    "/auth/google/callback",
+    passport.authenticate("google", { failureRedirect: "/login" }),
+    async (req, res) => {
+        const googleId = req.user.id; // Accessing the Google ID from req.user
+        req.session.googleId = googleId;
+        const user = findUserByGoogleId(googleId); // fix later!!!!!!!!!!!!!!!!!!!!!!!!!
+        console.log("googleId", googleId);
+
+        if (user) {
+            // User exists, log them in
+            req.session.userId = user.id;
+            req.session.loggedIn = true;
+            res.redirect("/");
+        } else {
+            // User does not exist, redirect to register username
+            req.session.googleId = googleId; // Store Google ID in session to use in registration
+            res.redirect("/registerUsername");
+        }
+    }
+);
 
 // Additional routes that you must implement
 /* old get post id
@@ -274,25 +315,23 @@ app.get("/profile", isAuthenticated, async (req, res) => {
 app.get("/avatar/:username", handleAvatar);
 
 //Credit Dr. Posnett in class
-app.post("/register", registerUser);
-
-//not sure how to do register with db
+app.post("/registerUsername", registerUser);
 
 app.get("/emoji", async (req, res) => {
     try {
-        const response = await fetch(`https://emoji-api.com/emojis?access_key=${process.env.EMOJI_API_KEY}`);
+        const response = await fetch(
+            `https://emoji-api.com/emojis?access_key=${process.env.EMOJI_API_KEY}`
+        );
         const emojis = await response.json();
-        console.log("🚀 ~ app.get ~ emojis:", emojis)
         res.json(emojis);
     } catch (error) {
-        console.error('Error fetching emojis:', error);
-        res.status(500).json({ error: 'Failed to fetch emojis' });
+        console.error("Error fetching emojis:", error);
+        res.status(500).json({ error: "Failed to fetch emojis" });
     }
 });
 
 /*
 app.post("/login", (req, res) => {
-    // TODO: Login a user
     const { username } = req.body;
     const user = findUserByUsername(username);
     if (user) {
@@ -326,7 +365,9 @@ app.get("/logout", (req, res) => {
 app.post("/delete/:id", isAuthenticated, (req, res) => {
     const postId = parseInt(req.params.id, 10);
     const user = getCurrentUser(req);
-    const postIndex = posts.findIndex((p) => p.id === postId && p.username === user.username);
+    const postIndex = posts.findIndex(
+        (p) => p.id === postId && p.username === user.username
+    );
     if (postIndex >= 0) {
         posts.splice(postIndex, 1);
     }
@@ -446,7 +487,6 @@ let users = [
     },
 ];
 
-
 // Function to find a user by username
 function findUserByUsername(username) {
     // TODO: Return user object if found, otherwise return undefined
@@ -456,7 +496,12 @@ function findUserByUsername(username) {
 // Function to find a user by user ID
 function findUserById(userId) {
     // TODO: Return user object if found, otherwise return undefined
+    console.log("🚀 ~ findUserById ~ user.id  userID:", userId);
     return users.find((user) => user.id === userId);
+}
+
+function findUserByGoogleId(googleId) {
+    
 }
 
 // Function to add a new user
@@ -487,12 +532,11 @@ function registerUser(req, res) {
     const { username } = req.body;
     if (findUserByUsername(username)) {
         res.redirect("/register?error=Username+already+exists");
-    } 
-    else if (/\s/.test(username)) {
+    } else if (/\s/.test(username)) {
         res.redirect("/register?error=Username+cannot+contain+whitespace");
     } else {
         addUser(username);
-        res.redirect("/register?successReg=Account+registered+successfully.+Please+login.");
+        loginUser(req, res);
     }
 }
 
@@ -501,15 +545,13 @@ function registerUser(req, res) {
 function loginUser(req, res) {
     const username = req.body.username;
     const user = findUserByUsername(username);
-
     if (user) {
-        //Successful login
-        req.session.userID = user.id;
+        req.session.userId = user.id;
         req.session.loggedIn = true;
-        res.redirect('/');
+        res.redirect("/");
     } else {
         //Invalid username
-        res.redirect('/login?error=Invalid+username');
+        res.redirect("/login?error=Invalid+username");
     }
 }
 
@@ -547,16 +589,18 @@ function postLikedByUser(postId, user) {
 
 // Function to handle avatar generation and serving
 function handleAvatar(req, res) {
-    const { username } = req.params; 
-    const firstLetter = username.charAt(0).toUpperCase(); 
-    const avatarBuffer = generateAvatar(firstLetter); 
-    res.set("Content-Type", "image/png"); 
-    res.send(avatarBuffer); 
+    const { username } = req.params;
+    const firstLetter = username.charAt(0).toUpperCase();
+    const avatarBuffer = generateAvatar(firstLetter);
+    res.set("Content-Type", "image/png");
+    res.send(avatarBuffer);
 }
 
 // Function to get the current user from session
 function getCurrentUser(req) {
     // TODO: Return the user object if the session user ID matches
+    console.log("🚀 ~ getCurrentUser ~ req.session:", req.session.userId);
+
     return findUserById(req.session.userId);
 }
 
@@ -581,10 +625,10 @@ function addPost(title, content, user) {
 
 function formatDate(date) {
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
     return `${year}-${month}-${day} ${hours}:${minutes}`;
 }
 
@@ -602,7 +646,7 @@ function generateAvatar(letter, width = 100, height = 100) {
     } else {
         ctx.fillStyle = "#000000";
     }
-    ctx.font = "50px Arial"
+    ctx.font = "50px Arial";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(letter, width / 2, height / 2);

@@ -9,6 +9,11 @@ npm install express express-handlebars
 npm install express-session  
 npm install canvas
 npm install dotenv
+npm install sqlite3 sqlite
+npm install passport
+<!-- maybe -->
+npm install passport-google-oauth20
+<!-- maybe -->
 
 ## Optional Installations
 
