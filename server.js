@@ -134,21 +134,28 @@ app.get("/", (req, res) => {
 */
 
 app.get("/", async (req, res) => {
-    const sort = req.query.sort || "recent"; // Default to 'recent' if no sort specified
+    const sort = req.query.sort || 'recent';  //recent is default
     let posts;
 
-    if (sort === "likes") {
-        posts = await db.all(
-            "SELECT * FROM posts ORDER BY likes DESC, timestamp DESC"
-        );
+    if (sort === 'likes') {
+        posts = await db.all('SELECT * FROM posts ORDER BY likes DESC, timestamp DESC');
     } else {
-        // Most recent
-        posts = await db.all("SELECT * FROM posts ORDER BY timestamp DESC");
+        //recent
+        posts = await db.all('SELECT * FROM posts ORDER BY timestamp DESC');
     }
-    const user = req.session.userId
-        ? await db.get("SELECT * FROM users WHERE id = ?", req.session.userId)
-        : {};
-    res.render("home", { posts, user, sort }); // Pass the sort parameter to the template
+
+    const userId = req.session.userId; 
+    if (userId) {
+        const likesPromises = posts.map(async (post) => {
+            const likeResult = await db.get("SELECT 1 FROM user_likes WHERE user_id = ? AND post_id = ?", [userId, post.id]);
+            post.isLikedByUser = !!likeResult; 
+            return post;
+        });
+        posts = await Promise.all(likesPromises);
+    }
+
+    const user = userId ? await db.get('SELECT * FROM users WHERE id = ?', userId) : {};
+    res.render("home", { posts, user, sort }); 
 });
 
 // Register GET route is used for error response from registration
