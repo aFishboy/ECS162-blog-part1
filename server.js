@@ -4,8 +4,8 @@ const session = require("express-session");
 const canvas = require("canvas");
 const dotenv = require("dotenv");
 const passport = require("passport");
-const sqlite = require('sqlite');
-const sqlite3 = require('sqlite3');
+const sqlite = require("sqlite");
+const sqlite3 = require("sqlite3");
 require("./auth");
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -13,17 +13,16 @@ require("./auth");
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 //db setup
-const dbFileName = 'finster.db';
+const dbFileName = "finster.db";
 let db;
 
 async function connectToDatabase() {
     db = await sqlite.open({ filename: dbFileName, driver: sqlite3.Database });
 }
 
-connectToDatabase().catch(err => {
-    console.error('Error connecting to database:', err);
+connectToDatabase().catch((err) => {
+    console.error("Error connecting to database:", err);
 });
-
 
 dotenv.config();
 
@@ -133,19 +132,22 @@ app.get("/", (req, res) => {
 */
 
 app.get("/", async (req, res) => {
-    const sort = req.query.sort || 'recent';  // Default to 'recent' if no sort specified
+    const sort = req.query.sort || "recent"; // Default to 'recent' if no sort specified
     let posts;
 
-    if (sort === 'likes') {
-        posts = await db.all('SELECT * FROM posts ORDER BY likes DESC, timestamp DESC');
+    if (sort === "likes") {
+        posts = await db.all(
+            "SELECT * FROM posts ORDER BY likes DESC, timestamp DESC"
+        );
     } else {
         // Most recent
-        posts = await db.all('SELECT * FROM posts ORDER BY timestamp DESC');
+        posts = await db.all("SELECT * FROM posts ORDER BY timestamp DESC");
     }
-    const user = req.session.userId ? await db.get('SELECT * FROM users WHERE id = ?', req.session.userId) : {};
-    res.render("home", { posts, user, sort });  // Pass the sort parameter to the template
+    const user = req.session.userId
+        ? await db.get("SELECT * FROM users WHERE id = ?", req.session.userId)
+        : {};
+    res.render("home", { posts, user, sort }); // Pass the sort parameter to the template
 });
-
 
 // Register GET route is used for error response from registration
 // or to display success from registration
@@ -182,15 +184,13 @@ app.get(
     passport.authenticate("google", { scope: ["profile"] })
 );
 
-// Google OAuth callback route
 app.get(
     "/auth/google/callback",
     passport.authenticate("google", { failureRedirect: "/login" }),
     async (req, res) => {
         const googleId = req.user.id; // Accessing the Google ID from req.user
         req.session.googleId = googleId;
-        const user = findUserByGoogleId(googleId); // fix later!!!!!!!!!!!!!!!!!!!!!!!!!
-        console.log("googleId", googleId);
+        const user = await findUserByGoogleId(googleId); // fix later!!!!!!!!!!!!!!!!!!!!!!!!!
 
         if (user) {
             // User exists, log them in
@@ -205,20 +205,11 @@ app.get(
     }
 );
 
-// Additional routes that you must implement
-/* old get post id
-app.get("/post/:id", (req, res) => {
-    // TODO: Render post detail page
-    const post = posts.find((p) => p.id === parseInt(req.params.id, 10));
-    if (post) {
-        res.render("postDetail", { post });
-    } else {
-        res.redirect("/error");
-    }
-}); */
-
 app.get("/post/:id", async (req, res) => {
-    const post = await db.get('SELECT * FROM posts WHERE id = ?', req.params.id);
+    const post = await db.get(
+        "SELECT * FROM posts WHERE id = ?",
+        req.params.id
+    );
     if (post) {
         res.render("postDetail", { post });
     } else {
@@ -226,48 +217,21 @@ app.get("/post/:id", async (req, res) => {
     }
 });
 
-/*
-app.post("/posts", (req, res) => {
-    // TODO: Add a new post and redirect to home
-    const { title, content } = req.body;
-    const user = getCurrentUser(req);
-    if (user) {
-        addPost(title, content, user);
-        res.redirect("/");
-    } else {
-        res.redirect("/login");
-    }
-}); */
-
-//not completely sure about this
 app.post("/posts", async (req, res) => {
     const { title, content } = req.body;
-    const user = req.session.userId ? await db.get('SELECT * FROM users WHERE id = ?', req.session.userId) : null;
+    const user = req.session.userId
+        ? await db.get("SELECT * FROM users WHERE id = ?", req.session.userId)
+        : null;
     if (user) {
-        await db.run('INSERT INTO posts (title, content, username, timestamp, likes) VALUES (?, ?, ?, ?, ?)', [title, content, user.username, formatDate(new Date()), 0]);
+        await db.run(
+            "INSERT INTO posts (title, content, username, timestamp, likes) VALUES (?, ?, ?, ?, ?)",
+            [title, content, user.username, formatDate(new Date()), 0]
+        );
         res.redirect("/");
     } else {
         res.redirect("/login");
     }
 });
-
-/*
-app.post("/like/:id", (req, res) => {
-    // TODO: Update post likes
-    const postId = parseInt(req.params.id, 10);
-    const post = posts.find((p) => p.id === postId);
-    const user = getCurrentUser(req);
-    if (post && user) {
-        if (!postLikedByUser(postId, user)) {
-            post.likes += 1;
-            user.likedPosts.add(postId);
-        } else {
-            post.likes -= 1;
-            user.likedPosts.delete(postId);
-        }
-        res.redirect("/");
-    }
-}); */
 
 app.post("/like/:id", async (req, res) => {
     if (!req.session.userId) {
@@ -279,15 +243,33 @@ app.post("/like/:id", async (req, res) => {
 
     try {
         //check if user has liked post
-        const exists = await db.get("SELECT 1 FROM user_likes WHERE user_id = ? AND post_id = ?", userId, postId);
+        const exists = await db.get(
+            "SELECT 1 FROM user_likes WHERE user_id = ? AND post_id = ?",
+            userId,
+            postId
+        );
         if (exists) {
             // unlike
-            await db.run("DELETE FROM user_likes WHERE user_id = ? AND post_id = ?", userId, postId);
-            await db.run("UPDATE posts SET likes = likes - 1 WHERE id = ?", postId);
+            await db.run(
+                "DELETE FROM user_likes WHERE user_id = ? AND post_id = ?",
+                userId,
+                postId
+            );
+            await db.run(
+                "UPDATE posts SET likes = likes - 1 WHERE id = ?",
+                postId
+            );
         } else {
             //like
-            await db.run("INSERT INTO user_likes (user_id, post_id) VALUES (?, ?)", userId, postId);
-            await db.run("UPDATE posts SET likes = likes + 1 WHERE id = ?", postId);
+            await db.run(
+                "INSERT INTO user_likes (user_id, post_id) VALUES (?, ?)",
+                userId,
+                postId
+            );
+            await db.run(
+                "UPDATE posts SET likes = likes + 1 WHERE id = ?",
+                postId
+            );
         }
         res.redirect("/");
     } catch (error) {
@@ -296,25 +278,21 @@ app.post("/like/:id", async (req, res) => {
     }
 });
 
-
-/* old profile
-app.get("/profile", isAuthenticated, (req, res) => {
-    const user = getCurrentUser(req);
-    const userPosts = posts.filter((post) => post.username === user.username);
-    user.posts = userPosts;
-    res.render("profile", { user, posts: userPosts });
-}); */
-
 app.get("/profile", isAuthenticated, async (req, res) => {
-    const user = await db.get('SELECT * FROM users WHERE id = ?', req.session.userId);
-    const userPosts = await db.all('SELECT * FROM posts WHERE username = ? ORDER BY timestamp DESC', user.username);
+    const user = await db.get(
+        "SELECT * FROM users WHERE id = ?",
+        req.session.userId
+    );
+    const userPosts = await db.all(
+        "SELECT * FROM posts WHERE username = ? ORDER BY timestamp DESC",
+        user.username
+    );
     user.posts = userPosts;
     res.render("profile", { user, posts: userPosts });
 });
 
 app.get("/avatar/:username", handleAvatar);
 
-//Credit Dr. Posnett in class
 app.post("/registerUsername", registerUser);
 
 app.get("/emoji", async (req, res) => {
@@ -330,22 +308,12 @@ app.get("/emoji", async (req, res) => {
     }
 });
 
-/*
-app.post("/login", (req, res) => {
-    const { username } = req.body;
-    const user = findUserByUsername(username);
-    if (user) {
-        req.session.userId = user.id;
-        req.session.loggedIn = true;
-        res.redirect("/");
-    } else {
-        res.redirect("/login?error=Invalid+username");
-    }
-}); */
-
 app.post("/login", async (req, res) => {
     const { username } = req.body;
-    const user = await db.get('SELECT * FROM users WHERE username = ?', username);
+    const user = await db.get(
+        "SELECT * FROM users WHERE username = ?",
+        username
+    );
     if (user) {
         req.session.userId = user.id;
         req.session.loggedIn = true;
@@ -355,31 +323,36 @@ app.post("/login", async (req, res) => {
     }
 });
 
-app.get("/logout", (req, res) => {
-    // TODO: Logout the user
-    req.session.destroy(() => {
-        res.redirect("/");
+app.get("/logout", (req, res, next) => {
+    // Logout the user with a callback function to handle errors
+    req.logout(function (err) {
+        if (err) {
+            return next(err);
+        }
+
+        // Destroy the session and redirect to the home page
+        req.session.destroy(() => {
+            res.redirect("/googleLogout");
+        });
     });
 });
-/*
-app.post("/delete/:id", isAuthenticated, (req, res) => {
-    const postId = parseInt(req.params.id, 10);
-    const user = getCurrentUser(req);
-    const postIndex = posts.findIndex(
-        (p) => p.id === postId && p.username === user.username
-    );
-    if (postIndex >= 0) {
-        posts.splice(postIndex, 1);
-    }
-    res.redirect("/");
-}); */
+
+app.get("/googleLogout", (req, res) => {
+    res.render("googleLogout");
+});
 
 app.post("/delete/:id", isAuthenticated, async (req, res) => {
     const postId = parseInt(req.params.id, 10);
-    const user = await db.get('SELECT * FROM users WHERE id = ?', req.session.userId);
-    const post = await db.get('SELECT * FROM posts WHERE id = ? AND username = ?', [postId, user.username]);
+    const user = await db.get(
+        "SELECT * FROM users WHERE id = ?",
+        req.session.userId
+    );
+    const post = await db.get(
+        "SELECT * FROM posts WHERE id = ? AND username = ?",
+        [postId, user.username]
+    );
     if (post) {
-        await db.run('DELETE FROM posts WHERE id = ?', postId);
+        await db.run("DELETE FROM posts WHERE id = ?", postId);
     }
     res.redirect("/");
 });
@@ -488,34 +461,26 @@ let users = [
 ];
 
 // Function to find a user by username
-function findUserByUsername(username) {
-    // TODO: Return user object if found, otherwise return undefined
-    return users.find((user) => user.username === username);
+async function findUserByUsername(username) {
+    const user = await db.get("SELECT * FROM users WHERE username = ?", [
+        username,
+    ]);
+    return user;
 }
 
 // Function to find a user by user ID
-function findUserById(userId) {
-    // TODO: Return user object if found, otherwise return undefined
-    console.log("🚀 ~ findUserById ~ user.id  userID:", userId);
-    return users.find((user) => user.id === userId);
+async function findUserById(userId) {
+    const user = await db.get("SELECT * FROM users WHERE id = ?", [
+        userId,
+    ]);
+    return user;
 }
 
-function findUserByGoogleId(googleId) {
-    
-}
-
-// Function to add a new user
-function addUser(username) {
-    // TODO: Create a new user object and add to users array
-    const newUser = {
-        id: users.length + 1,
-        username,
-        avatar_url: undefined,
-        memberSince: formatDate(new Date()),
-        likedPosts: new Set(),
-    };
-    users.push(newUser);
-    return newUser;
+async function findUserByGoogleId(googleId) {
+    const user = await db.get("SELECT * FROM users WHERE hashedGoogleId = ?", [
+        googleId,
+    ]);
+    return user;
 }
 
 // Middleware to check if user is authenticated
@@ -527,31 +492,41 @@ function isAuthenticated(req, res, next) {
     }
 }
 
-// Function to register a user
-function registerUser(req, res) {
+async function registerUser(req, res) {
     const { username } = req.body;
-    if (findUserByUsername(username)) {
+    const userNameExists = await db.get(
+        "SELECT 1 FROM users WHERE username = ?",
+        username
+    );
+    if (userNameExists) {
         res.redirect("/register?error=Username+already+exists");
     } else if (/\s/.test(username)) {
         res.redirect("/register?error=Username+cannot+contain+whitespace");
     } else {
-        addUser(username);
-        loginUser(req, res);
+        addUser(req);
+        await loginUser(req, res);
     }
+}
+
+async function addUser(req) {
+    await db.run(
+        "INSERT INTO users (username, hashedGoogleId, memberSince) VALUES (?, ?, ?)",
+        [req.body.username, req.user.id, formatDate(new Date())]
+    );
 }
 
 // Function to login a user
 //Credit Dr. Posnett in class
-function loginUser(req, res) {
+async function loginUser(req, res) {
     const username = req.body.username;
-    const user = findUserByUsername(username);
+    const user = await findUserByUsername(username);
     if (user) {
         req.session.userId = user.id;
         req.session.loggedIn = true;
         res.redirect("/");
     } else {
         //Invalid username
-        res.redirect("/login?error=Invalid+username");
+        res.redirect("/login?error=Login+failed");
     }
 }
 
@@ -598,9 +573,6 @@ function handleAvatar(req, res) {
 
 // Function to get the current user from session
 function getCurrentUser(req) {
-    // TODO: Return the user object if the session user ID matches
-    console.log("🚀 ~ getCurrentUser ~ req.session:", req.session.userId);
-
     return findUserById(req.session.userId);
 }
 
