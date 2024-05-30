@@ -70,8 +70,10 @@ app.engine(
                 }
                 return options.inverse(this);
             },
-            likedByUser: function (postId, userLikedPosts, options) {
-                if (userLikedPosts && userLikedPosts.has(postId)) {
+            likedByUser: function (postId, userId, options) {
+                console.log("Liked by user ", postLikedByUser(postId, userId));
+                if (userId && postLikedByUser(postId, userId)) {
+                    console.log("here");
                     return options.fn(this);
                 }
                 return options.inverse(this);
@@ -210,8 +212,10 @@ app.get("/post/:id", async (req, res) => {
         "SELECT * FROM posts WHERE id = ?",
         req.params.id
     );
+    const isLikedByUser = await postLikedByUser(post.id, req.session.userId);
+    console.log("🚀 ~ app.get ~ isLikedByUser:", isLikedByUser)
     if (post) {
-        res.render("postDetail", { post });
+        res.render("postDetail", { post, isLikedByUser });
     } else {
         res.redirect("/error");
     }
@@ -369,97 +373,6 @@ app.listen(PORT, () => {
 // Support Functions and Variables
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-// Example data for posts and users
-
-let posts = [
-    {
-        id: 1,
-        title: "Hooked on Fishing",
-        content: "Just reeled in the big one!",
-        username: "FishermanFred",
-        timestamp: "2024-01-01 10:00",
-        likes: 0,
-    },
-    {
-        id: 2,
-        title: "Reel Deal",
-        content: "This catch is off the scales!",
-        username: "ReelAngler",
-        timestamp: "2024-01-02 12:00",
-        likes: 3,
-    },
-    {
-        id: 3,
-        title: "The One That Got Away",
-        content: "Lost a big one today, but here's a new post.",
-        username: "FishermanFred",
-        timestamp: "2024-01-03 15:30",
-        likes: 2,
-    },
-    {
-        id: 4,
-        title: "Catch of the Day",
-        content: "Just netted something exciting! Don't miss it!",
-        username: "ANewbieNemo",
-        timestamp: "2024-01-04 09:45",
-        likes: 1,
-    },
-    {
-        id: 5,
-        title: "Tackle Time",
-        content: "Getting ready to cast my line into the depths!",
-        username: "ProBaiter",
-        timestamp: "2024-01-05 11:15",
-        likes: 0,
-    },
-    {
-        id: 6,
-        title: "Fishing Frenzy",
-        content: "Caught so many fish today, my arms are aching!",
-        username: "MasterAngler",
-        timestamp: "2024-01-06 14:20",
-        likes: 5,
-    },
-];
-
-let users = [
-    {
-        id: 1,
-        username: "FishermanFred",
-        avatar_url: undefined,
-        memberSince: "2024-01-01 08:00",
-        likedPosts: new Set(),
-    },
-    {
-        id: 2,
-        username: "ReelAngler",
-        avatar_url: undefined,
-        memberSince: "2024-01-02 09:00",
-        likedPosts: new Set(),
-    },
-    {
-        id: 3,
-        username: "ANewbieNemo",
-        avatar_url: undefined,
-        memberSince: "2024-01-04 08:30",
-        likedPosts: new Set(),
-    },
-    {
-        id: 4,
-        username: "ProBaiter",
-        avatar_url: undefined,
-        memberSince: "2024-01-05 10:45",
-        likedPosts: new Set(),
-    },
-    {
-        id: 5,
-        username: "MasterAngler",
-        avatar_url: undefined,
-        memberSince: "2024-01-06 13:15",
-        likedPosts: new Set(),
-    },
-];
-
 // Function to find a user by username
 async function findUserByUsername(username) {
     const user = await db.get("SELECT * FROM users WHERE username = ?", [
@@ -470,9 +383,7 @@ async function findUserByUsername(username) {
 
 // Function to find a user by user ID
 async function findUserById(userId) {
-    const user = await db.get("SELECT * FROM users WHERE id = ?", [
-        userId,
-    ]);
+    const user = await db.get("SELECT * FROM users WHERE id = ?", [userId]);
     return user;
 }
 
@@ -558,8 +469,13 @@ function updatePostLikes(req, res) {
     res.redirect("/");
 }
 
-function postLikedByUser(postId, user) {
-    return user.likedPosts.has(postId);
+async function postLikedByUser(postId, userId) {
+    const isLiked = await db.get(
+        "SELECT 1 FROM user_likes WHERE user_id = ? AND post_id = ?",
+        userId,
+        postId
+    );
+    return isLiked;
 }
 
 // Function to handle avatar generation and serving
