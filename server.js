@@ -189,7 +189,7 @@ app.get(
     async (req, res) => {
         const googleId = req.user.id; // Accessing the Google ID from req.user
         req.session.googleId = googleId;
-        const user = findUserById(googleId); // fix later!!!!!!!!!!!!!!!!!!!!!!!!!
+        const user = findUserByGoogleId(googleId); // fix later!!!!!!!!!!!!!!!!!!!!!!!!!
         console.log("googleId", googleId);
 
         if (user) {
@@ -498,6 +498,10 @@ function findUserById(userId) {
     // TODO: Return user object if found, otherwise return undefined
     console.log("🚀 ~ findUserById ~ user.id  userID:", userId);
     return users.find((user) => user.id === userId);
+}
+
+function findUserByGoogleId(googleId) {
+    
 }
 
 // Function to add a new user
