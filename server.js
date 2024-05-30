@@ -182,7 +182,7 @@ app.get(
     passport.authenticate("google", { scope: ["profile"] })
 );
 
-// Google OAuth callback route
+
 app.get(
     "/auth/google/callback",
     passport.authenticate("google", { failureRedirect: "/login" }),
@@ -190,7 +190,7 @@ app.get(
         const googleId = req.user.id; // Accessing the Google ID from req.user
         req.session.googleId = googleId;
         const user = findUserByGoogleId(googleId); // fix later!!!!!!!!!!!!!!!!!!!!!!!!!
-        console.log("googleId", googleId);
+        console.log("user in callback", user);
 
         if (user) {
             // User exists, log them in
@@ -205,17 +205,6 @@ app.get(
     }
 );
 
-// Additional routes that you must implement
-/* old get post id
-app.get("/post/:id", (req, res) => {
-    // TODO: Render post detail page
-    const post = posts.find((p) => p.id === parseInt(req.params.id, 10));
-    if (post) {
-        res.render("postDetail", { post });
-    } else {
-        res.redirect("/error");
-    }
-}); */
 
 app.get("/post/:id", async (req, res) => {
     const post = await db.get('SELECT * FROM posts WHERE id = ?', req.params.id);
@@ -226,20 +215,7 @@ app.get("/post/:id", async (req, res) => {
     }
 });
 
-/*
-app.post("/posts", (req, res) => {
-    // TODO: Add a new post and redirect to home
-    const { title, content } = req.body;
-    const user = getCurrentUser(req);
-    if (user) {
-        addPost(title, content, user);
-        res.redirect("/");
-    } else {
-        res.redirect("/login");
-    }
-}); */
 
-//not completely sure about this
 app.post("/posts", async (req, res) => {
     const { title, content } = req.body;
     const user = req.session.userId ? await db.get('SELECT * FROM users WHERE id = ?', req.session.userId) : null;
@@ -251,23 +227,6 @@ app.post("/posts", async (req, res) => {
     }
 });
 
-/*
-app.post("/like/:id", (req, res) => {
-    // TODO: Update post likes
-    const postId = parseInt(req.params.id, 10);
-    const post = posts.find((p) => p.id === postId);
-    const user = getCurrentUser(req);
-    if (post && user) {
-        if (!postLikedByUser(postId, user)) {
-            post.likes += 1;
-            user.likedPosts.add(postId);
-        } else {
-            post.likes -= 1;
-            user.likedPosts.delete(postId);
-        }
-        res.redirect("/");
-    }
-}); */
 
 app.post("/like/:id", async (req, res) => {
     if (!req.session.userId) {
@@ -297,13 +256,6 @@ app.post("/like/:id", async (req, res) => {
 });
 
 
-/* old profile
-app.get("/profile", isAuthenticated, (req, res) => {
-    const user = getCurrentUser(req);
-    const userPosts = posts.filter((post) => post.username === user.username);
-    user.posts = userPosts;
-    res.render("profile", { user, posts: userPosts });
-}); */
 
 app.get("/profile", isAuthenticated, async (req, res) => {
     const user = await db.get('SELECT * FROM users WHERE id = ?', req.session.userId);
@@ -314,7 +266,6 @@ app.get("/profile", isAuthenticated, async (req, res) => {
 
 app.get("/avatar/:username", handleAvatar);
 
-//Credit Dr. Posnett in class
 app.post("/registerUsername", registerUser);
 
 app.get("/emoji", async (req, res) => {
@@ -330,18 +281,6 @@ app.get("/emoji", async (req, res) => {
     }
 });
 
-/*
-app.post("/login", (req, res) => {
-    const { username } = req.body;
-    const user = findUserByUsername(username);
-    if (user) {
-        req.session.userId = user.id;
-        req.session.loggedIn = true;
-        res.redirect("/");
-    } else {
-        res.redirect("/login?error=Invalid+username");
-    }
-}); */
 
 app.post("/login", async (req, res) => {
     const { username } = req.body;
@@ -357,22 +296,12 @@ app.post("/login", async (req, res) => {
 
 app.get("/logout", (req, res) => {
     // TODO: Logout the user
+    req.logout();
     req.session.destroy(() => {
         res.redirect("/");
     });
 });
-/*
-app.post("/delete/:id", isAuthenticated, (req, res) => {
-    const postId = parseInt(req.params.id, 10);
-    const user = getCurrentUser(req);
-    const postIndex = posts.findIndex(
-        (p) => p.id === postId && p.username === user.username
-    );
-    if (postIndex >= 0) {
-        posts.splice(postIndex, 1);
-    }
-    res.redirect("/");
-}); */
+
 
 app.post("/delete/:id", isAuthenticated, async (req, res) => {
     const postId = parseInt(req.params.id, 10);
@@ -500,22 +429,14 @@ function findUserById(userId) {
     return users.find((user) => user.id === userId);
 }
 
-function findUserByGoogleId(googleId) {
-    
-}
-
-// Function to add a new user
-function addUser(username) {
-    // TODO: Create a new user object and add to users array
-    const newUser = {
-        id: users.length + 1,
-        username,
-        avatar_url: undefined,
-        memberSince: formatDate(new Date()),
-        likedPosts: new Set(),
-    };
-    users.push(newUser);
-    return newUser;
+async function findUserByGoogleId(googleId) {
+    const user = await db.get(
+        "SELECT 1 FROM users WHERE hashedGoogleId = ?",
+        googleId
+    );
+    console.log("googleId", googleId);
+    console.log("user in findbygId", user);
+    return user
 }
 
 // Middleware to check if user is authenticated
@@ -527,17 +448,29 @@ function isAuthenticated(req, res, next) {
     }
 }
 
-// Function to register a user
-function registerUser(req, res) {
+async function registerUser(req, res) {
     const { username } = req.body;
-    if (findUserByUsername(username)) {
+    const userNameExists = await db.get(
+        "SELECT 1 FROM users WHERE username = ?",
+        username
+    );
+    if (userNameExists) {
         res.redirect("/register?error=Username+already+exists");
     } else if (/\s/.test(username)) {
         res.redirect("/register?error=Username+cannot+contain+whitespace");
     } else {
-        addUser(username);
+        addUser(req);
         loginUser(req, res);
     }
+}
+
+async function addUser(req) {
+    await db.run(
+        "INSERT INTO users (username, hashedGoogleId, memberSince) VALUES (?, ?, ?)",
+        [req.body.username, req.user.id, new Date()]
+    );
+
+    return newUser;
 }
 
 // Function to login a user
