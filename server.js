@@ -246,21 +246,19 @@ app.post("/posts", async (req, res) => {
 
 app.post("/like/:id", async (req, res) => {
     if (!req.session.userId) {
-        return res.redirect("/login");
+        return res.status(401).json({ error: 'Unauthorized' });
     }
 
     const postId = parseInt(req.params.id, 10);
     const userId = req.session.userId;
 
     try {
-        //check if user has liked post
         const exists = await db.get(
             "SELECT 1 FROM user_likes WHERE user_id = ? AND post_id = ?",
             userId,
             postId
         );
         if (exists) {
-            // unlike
             await db.run(
                 "DELETE FROM user_likes WHERE user_id = ? AND post_id = ?",
                 userId,
@@ -271,7 +269,6 @@ app.post("/like/:id", async (req, res) => {
                 postId
             );
         } else {
-            //like
             await db.run(
                 "INSERT INTO user_likes (user_id, post_id) VALUES (?, ?)",
                 userId,
@@ -282,10 +279,14 @@ app.post("/like/:id", async (req, res) => {
                 postId
             );
         }
-        res.redirect("/");
+
+        const updatedPost = await db.get("SELECT likes FROM posts WHERE id = ?", postId);
+        const isLikedByUser = !exists;  // If it was unliked, now it's liked and vice versa
+
+        res.json({ likes: updatedPost.likes, isLikedByUser });
     } catch (error) {
         console.error("Error processing like:", error);
-        res.redirect("/error");
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 

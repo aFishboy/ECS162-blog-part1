@@ -1,9 +1,23 @@
 function handleLikeClick(event) {
-    // you might want to "fetch" something...
-    const postId = event.target.closest('.like-button').getAttribute('data-id');
+    const likeButton = event.target.closest('.like-button');
+    const postId = likeButton.getAttribute('data-id');
+
     fetch(`/like/${postId}`, { method: 'POST' })
-        .then(() => window.location.reload());
+        .then(response => response.json())
+        .then(data => {
+            // Update the like count and button appearance
+            const likeCountElement = likeButton.closest('.post-status-bar').querySelector('.like-count');
+            likeCountElement.textContent = `${data.likes} Likes`;
+            
+            if (data.isLikedByUser) {
+                likeButton.classList.add('liked-by-user');
+            } else {
+                likeButton.classList.remove('liked-by-user');
+            }
+        })
+        .catch(error => console.error('Error:', error));
 }
+
 
 function handleDeleteClick(event) {
     console.log("delete event")
