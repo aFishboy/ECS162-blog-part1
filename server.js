@@ -8,6 +8,7 @@ const multer = require("multer");
 const sqlite = require("sqlite");
 const sqlite3 = require("sqlite3");
 const path = require('path');
+const fs = require('fs');
 require("./auth");
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -17,6 +18,12 @@ require("./auth");
 //db setup
 const dbFileName = "finster.db";
 let db;
+
+//create uploads if it doesnt exit
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 async function connectToDatabase() {
     db = await sqlite.open({ filename: dbFileName, driver: sqlite3.Database });
