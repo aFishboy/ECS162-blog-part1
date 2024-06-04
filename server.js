@@ -7,8 +7,8 @@ const passport = require("passport");
 const multer = require("multer");
 const sqlite = require("sqlite");
 const sqlite3 = require("sqlite3");
-const path = require('path');
-const fs = require('fs');
+const path = require("path");
+const fs = require("fs");
 require("./auth");
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -20,7 +20,7 @@ const dbFileName = "finster.db";
 let db;
 
 //create uploads if it doesnt exit
-const uploadsDir = path.join(__dirname, 'uploads');
+const uploadsDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
 }
@@ -122,7 +122,7 @@ app.use((req, res, next) => {
 });
 
 app.use(express.static("public")); // Serve static files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies (as sent by HTML forms)
 app.use(express.json()); // Parse JSON bodies (as sent by API clients)
 
@@ -334,6 +334,20 @@ app.get("/profile", isAuthenticated, async (req, res) => {
 });
 
 app.get("/avatar/:username", handleAvatar);
+
+app.post("/uploadAvatar", upload.single("image"), async (req, res) => {    
+    try {
+        const imageName = req.file ? req.file.filename : null;
+        const userId = req.session.userId
+        const updateQuery = 'UPDATE users SET avatarName = ? WHERE id = ?';
+        await db.run(updateQuery, [imageName, userId]);
+        res.status(200).send('Avatar uploaded and user updated successfully');
+    } catch (error) {
+        console.error('Error uploading avatar and updating user:', error);
+        res.status(500).send('Internal server error');
+    }
+});
+    
 
 app.post("/registerUsername", registerUser);
 
