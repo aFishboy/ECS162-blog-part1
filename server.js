@@ -4,8 +4,10 @@ const session = require("express-session");
 const canvas = require("canvas");
 const dotenv = require("dotenv");
 const passport = require("passport");
+const multer = require("multer");
 const sqlite = require("sqlite");
 const sqlite3 = require("sqlite3");
+const path = require('path');
 require("./auth");
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -27,6 +29,7 @@ connectToDatabase().catch((err) => {
 dotenv.config();
 
 const app = express();
+const upload = multer({ dest: "uploads/" });
 const PORT = 3000;
 
 /*
@@ -71,9 +74,7 @@ app.engine(
                 return options.inverse(this);
             },
             likedByUser: function (postId, userId, options) {
-                console.log("Liked by user ", postLikedByUser(postId, userId));
                 if (userId && postLikedByUser(postId, userId)) {
-                    console.log("here");
                     return options.fn(this);
                 }
                 return options.inverse(this);
@@ -114,6 +115,7 @@ app.use((req, res, next) => {
 });
 
 app.use(express.static("public")); // Serve static files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies (as sent by HTML forms)
 app.use(express.json()); // Parse JSON bodies (as sent by API clients)
 
@@ -134,28 +136,34 @@ app.get("/", (req, res) => {
 */
 
 app.get("/", async (req, res) => {
-    const sort = req.query.sort || 'recent';  //recent is default
+    const sort = req.query.sort || "recent"; //recent is default
     let posts;
 
-    if (sort === 'likes') {
-        posts = await db.all('SELECT * FROM posts ORDER BY likes DESC, timestamp DESC');
+    if (sort === "likes") {
+        posts = await db.all(
+            "SELECT * FROM posts ORDER BY likes DESC, timestamp DESC"
+        );
     } else {
         //recent
-        posts = await db.all('SELECT * FROM posts ORDER BY timestamp DESC');
+        posts = await db.all("SELECT * FROM posts ORDER BY timestamp DESC");
     }
 
-    const userId = req.session.userId; 
+    const userId = req.session.userId;
     if (userId) {
         const likesPromises = posts.map(async (post) => {
-            const likeResult = await db.get("SELECT 1 FROM user_likes WHERE user_id = ? AND post_id = ?", [userId, post.id]);
-            post.isLikedByUser = !!likeResult; 
+            const likeResult = await db.get(
+                "SELECT 1 FROM user_likes WHERE user_id = ? AND post_id = ?",
+                [userId, post.id]
+            );
+            post.isLikedByUser = !!likeResult;
             return post;
         });
         posts = await Promise.all(likesPromises);
     }
-
-    const user = userId ? await db.get('SELECT * FROM users WHERE id = ?', userId) : {};
-    res.render("home", { posts, user, sort }); 
+    const user = userId
+        ? await db.get("SELECT * FROM users WHERE id = ?", userId)
+        : {};
+    res.render("home", { posts, user, sort });
 });
 
 // Register GET route is used for error response from registration
@@ -220,7 +228,6 @@ app.get("/post/:id", async (req, res) => {
         req.params.id
     );
     const isLikedByUser = await postLikedByUser(post.id, req.session.userId);
-    console.log("🚀 ~ app.get ~ isLikedByUser:", isLikedByUser)
     if (post) {
         res.render("postDetail", { post, isLikedByUser });
     } else {
@@ -228,17 +235,30 @@ app.get("/post/:id", async (req, res) => {
     }
 });
 
-app.post("/posts", async (req, res) => {
+app.post("/posts", upload.single("image"), async (req, res) => {
     const { title, content } = req.body;
+    const imageName = req.file ? req.file.filename : null;
     const user = req.session.userId
         ? await db.get("SELECT * FROM users WHERE id = ?", req.session.userId)
         : null;
     if (user) {
-        await db.run(
-            "INSERT INTO posts (title, content, username, timestamp, likes) VALUES (?, ?, ?, ?, ?)",
-            [title, content, user.username, formatDate(new Date()), 0]
-        );
-        res.redirect("/");
+        try {
+            await db.run(
+                "INSERT INTO posts (title, content, imageName, username, timestamp, likes) VALUES (?, ?, ?, ?, ?, ?)",
+                [
+                    title,
+                    content,
+                    imageName,
+                    user.username,
+                    formatDate(new Date()),
+                    0,
+                ]
+            );
+            res.redirect("/");
+        } catch (error) {
+            console.error(error.message);
+            res.status(500).send("Database error");
+        }
     } else {
         res.redirect("/login");
     }
@@ -246,7 +266,7 @@ app.post("/posts", async (req, res) => {
 
 app.post("/like/:id", async (req, res) => {
     if (!req.session.userId) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        return res.status(401).json({ error: "Unauthorized" });
     }
 
     const postId = parseInt(req.params.id, 10);
@@ -280,13 +300,16 @@ app.post("/like/:id", async (req, res) => {
             );
         }
 
-        const updatedPost = await db.get("SELECT likes FROM posts WHERE id = ?", postId);
-        const isLikedByUser = !exists;  // If it was unliked, now it's liked and vice versa
+        const updatedPost = await db.get(
+            "SELECT likes FROM posts WHERE id = ?",
+            postId
+        );
+        const isLikedByUser = !exists; // If it was unliked, now it's liked and vice versa
 
         res.json({ likes: updatedPost.likes, isLikedByUser });
     } catch (error) {
         console.error("Error processing like:", error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json({ error: "Internal Server Error" });
     }
 });
 
