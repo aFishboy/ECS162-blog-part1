@@ -1,3 +1,18 @@
+.img-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 6px;
+    margin-bottom: 10px;
+}
+
+.img-container img {
+    max-width: 30vmax;
+    max-height: auto;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
 .post {
     display: flex;
     background-color: #fff;

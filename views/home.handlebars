@@ -8,10 +8,12 @@
     {{#if loggedIn}}
         <section class="new-post">
             <h2>Make a new {{postNeoType}}</h2>
-            <form action="/posts" method="POST">
+            <form action="/posts" method="POST" enctype="multipart/form-data">
                 <input type="text" name="title" placeholder="Title" required>
                 <textarea name="content" placeholder="What's on your mind {{user.username}}?" required></textarea>
-                <img id="image-preview" src="" alt="Image Preview" style="display: none;">
+                <div class="img-container">
+                    <img id="image-preview" src="" alt="Image Preview" title="Preview of uploaded image" style="display: none;">
+                </div>
                 <div class="form-actions">
                     <button type="button" class="emoji-button" onclick="toggleEmojiPanel()">😀</button>
                     <label for="image-upload" class="upload-image-button" id="upload-image-label">Upload Image</label>

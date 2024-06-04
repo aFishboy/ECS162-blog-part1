@@ -4,8 +4,10 @@ const session = require("express-session");
 const canvas = require("canvas");
 const dotenv = require("dotenv");
 const passport = require("passport");
+const multer = require("multer");
 const sqlite = require("sqlite");
 const sqlite3 = require("sqlite3");
+const path = require('path');
 require("./auth");
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -27,6 +29,7 @@ connectToDatabase().catch((err) => {
 dotenv.config();
 
 const app = express();
+const upload = multer({ dest: "uploads/" });
 const PORT = 3000;
 
 /*
@@ -112,6 +115,7 @@ app.use((req, res, next) => {
 });
 
 app.use(express.static("public")); // Serve static files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies (as sent by HTML forms)
 app.use(express.json()); // Parse JSON bodies (as sent by API clients)
 
@@ -231,17 +235,30 @@ app.get("/post/:id", async (req, res) => {
     }
 });
 
-app.post("/posts", async (req, res) => {
-    const { title, content, image } = req.body;
+app.post("/posts", upload.single("image"), async (req, res) => {
+    const { title, content } = req.body;
+    const imageName = req.file ? req.file.filename : null;
     const user = req.session.userId
         ? await db.get("SELECT * FROM users WHERE id = ?", req.session.userId)
         : null;
     if (user) {
-        await db.run(
-            "INSERT INTO posts (title, content, image, username, timestamp, likes) VALUES (?, ?, ?, ?, ?)",
-            [title, content, image, user.username, formatDate(new Date()), 0]
-        );
-        res.redirect("/");
+        try {
+            await db.run(
+                "INSERT INTO posts (title, content, imageName, username, timestamp, likes) VALUES (?, ?, ?, ?, ?, ?)",
+                [
+                    title,
+                    content,
+                    imageName,
+                    user.username,
+                    formatDate(new Date()),
+                    0,
+                ]
+            );
+            res.redirect("/");
+        } catch (error) {
+            console.error(error.message);
+            res.status(500).send("Database error");
+        }
     } else {
         res.redirect("/login");
     }

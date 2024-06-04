@@ -161,3 +161,18 @@ input[type="radio"].toggle:checked + label {
     background-color: #4AD988; 
     color: #fff; 
 }
+
+.img-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 6px;
+    margin-bottom: 10px;
+}
+
+#image-preview {
+    max-width: 400px;
+    max-height: auto;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}

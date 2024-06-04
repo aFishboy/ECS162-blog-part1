@@ -58,32 +58,33 @@ function insertEmoji(emoji) {
     textarea.focus(); // Keep focus on the textarea
 }
 
-const uploadImageButton = document.querySelector(".upload-image-button");
-uploadImageButton.addEventListener("click", handleUploadImageClick);
-function handleUploadImageClick(event) {
-    console.log("Upload image button clicked!");
-    // Add your upload image button click handling logic here
-}
+const imageUploadInput = document.getElementById("image-upload");
+const uploadImageLabel = document.getElementById("upload-image-label");
+const imagePreview = document.getElementById("image-preview");
 
-    const imageUploadInput = document.getElementById('image-upload');
-    const uploadImageLabel = document.getElementById('upload-image-label');
-    const imagePreview = document.getElementById('image-preview');
+imageUploadInput.addEventListener("change", () => {
+    if (imageUploadInput.files.length > 0) {
+        let file = imageUploadInput.files[0];
+        let fileName = file.name;
+        const fileExtension = fileName.substring(fileName.lastIndexOf("."));
+        const baseFileName = fileName.substring(0, fileName.lastIndexOf("."));
 
-    imageUploadInput.addEventListener('change', () => {
-        if (imageUploadInput.files.length > 0) {
-            const file = imageUploadInput.files[0];
-            const reader = new FileReader();
-
-            reader.onload = () => {
-                uploadImageLabel.textContent = file.name;
-                imagePreview.src = reader.result;
-                imagePreview.style.display = 'block';
-            };
-
-            reader.readAsDataURL(file);
-        } else {
-            uploadImageLabel.textContent = 'Upload Image';
-            imagePreview.src = '';
-            imagePreview.style.display = 'none';
+        if (baseFileName.length > 7) {
+            fileName = baseFileName.substring(0, 7) + fileExtension;
         }
-    });
+
+        const reader = new FileReader();
+
+        reader.onload = () => {
+            uploadImageLabel.textContent = fileName;
+            imagePreview.src = reader.result;
+            imagePreview.style.display = "block";
+        };
+
+        reader.readAsDataURL(file);
+    } else {
+        uploadImageLabel.textContent = "Upload Image";
+        imagePreview.src = "";
+        imagePreview.style.display = "none";
+    }
+});
