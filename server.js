@@ -80,12 +80,7 @@ app.engine(
                 }
                 return options.inverse(this);
             },
-            likedByUser: function (postId, userId, options) {
-                if (userId && postLikedByUser(postId, userId)) {
-                    return options.fn(this);
-                }
-                return options.inverse(this);
-            },
+            userIdAvatar: function (userId) {},
         },
     })
 );
@@ -163,6 +158,8 @@ app.get("/", async (req, res) => {
                 [userId, post.id]
             );
             post.isLikedByUser = !!likeResult;
+            const postUser = await findUserByUsername(post.username);
+            post.userAvatar = await getAvatarName(postUser.id);
             return post;
         });
         posts = await Promise.all(likesPromises);
@@ -329,25 +326,28 @@ app.get("/profile", isAuthenticated, async (req, res) => {
         "SELECT * FROM posts WHERE username = ? ORDER BY timestamp DESC",
         user.username
     );
+    for (const post of userPosts) {
+        console.log("🚀 ~ app.get ~ post:", post)
+        post.userAvatar = await getAvatarName(user.id);
+    }
     user.posts = userPosts;
     res.render("profile", { user, posts: userPosts });
 });
 
 app.get("/avatar/:username", handleAvatar);
 
-app.post("/uploadAvatar", upload.single("image"), async (req, res) => {    
+app.post("/uploadAvatar", upload.single("image"), async (req, res) => {
     try {
         const imageName = req.file ? req.file.filename : null;
-        const userId = req.session.userId
-        const updateQuery = 'UPDATE users SET avatarName = ? WHERE id = ?';
+        const userId = req.session.userId;
+        const updateQuery = "UPDATE users SET avatarName = ? WHERE id = ?";
         await db.run(updateQuery, [imageName, userId]);
-        res.status(200).send('Avatar uploaded and user updated successfully');
+        res.status(200).send("Avatar uploaded and user updated successfully");
     } catch (error) {
-        console.error('Error uploading avatar and updating user:', error);
-        res.status(500).send('Internal server error');
+        console.error("Error uploading avatar and updating user:", error);
+        res.status(500).send("Internal server error");
     }
 });
-    
 
 app.post("/registerUsername", registerUser);
 
@@ -537,6 +537,22 @@ function handleAvatar(req, res) {
     const avatarBuffer = generateAvatar(firstLetter);
     res.set("Content-Type", "image/png");
     res.send(avatarBuffer);
+}
+
+async function getAvatarName(userId) {
+    try {
+        const row = await db.get("SELECT avatarName FROM users WHERE id = ?", [
+            userId,
+        ]);
+        if (row) {
+            return row.avatarName;
+        } else {
+            return null;
+        }
+    } catch (error) {
+        console.error("Error fetching avatar name:", error);
+        throw error;
+    }
 }
 
 // Function to get the current user from session

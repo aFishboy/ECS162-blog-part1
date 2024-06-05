@@ -4,7 +4,11 @@
 
 <div class="post">
     <div class="post-avatar">
-        <img src="/avatar/{{username}}" alt="User Avatar">
+        <img src="{{#if userAvatar}}
+                        /uploads/{{userAvatar}}
+                    {{else}}
+                        /avatar/{{username}}
+                    {{/if}}"  alt="User Avatar">
     </div>
     <div class="post-content preserve-newlines">
         <h3>{{title}}</h3>

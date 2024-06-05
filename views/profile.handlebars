@@ -7,7 +7,11 @@
     <div class="profile-header">
         <div class="profile-avatar">
             <div class="avatar-container">
-                <img src="/avatar/{{user.username}}" alt="User Avatar" class="avatar-img">
+                <img src="{{#if user.avatarName}}
+                                /uploads/{{user.avatarName}}
+                            {{else}}
+                                /avatar/{{user.username}}
+                            {{/if}}"  alt="User Avatar" class="avatar-img">
                 <img src="/images/edit-write.512x512.png" alt="Edit Icon" class="edit-icon">
             </div>
             <p>Change Profile Picture</p>
