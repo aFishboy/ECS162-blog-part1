@@ -9,11 +9,13 @@
     <div class="post-content preserve-newlines">
         <h3>{{title}}</h3>
         <p>{{content}}</p>
+        {{#if imageName}}
+            <div class="img-container">
+                <img src="/uploads/{{imageName}}" alt="Uploaded Image">
+            </div>
+        {{/if}}
         <hr class="post-content-horz-bar">
         <div class="post-status-bar">
-            <!-- everything that is shown in the status bar -->
-            <!-- Heart = ♥  or I found this <i class="fas fa-heart"></i>-->
-            <!-- font awesome  trashcan = <i class="fas fa-trash-alt"> </i>-->
             <div class="post-actions">
                 <p>
                     {{#ifCond this.username user.username}}
@@ -25,7 +27,7 @@
                             <i class="fas fa-heart"></i>
                         </button>
                     {{/ifCond}}
-                    {{likes}} Likes - {{postNeoType}}ed by {{username}} on {{timestamp}}
+                    <span class="like-count">{{likes}} Likes</span> - {{postNeoType}}ed by {{username}} on {{timestamp}}
                 </p>
             </div>
         </div>        
