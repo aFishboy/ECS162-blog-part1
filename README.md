@@ -13,12 +13,12 @@ Use ```node populatedb.js``` to initialize the database.
 npm init -y  
 npm install express express-handlebars  
 npm install express-session  
-npm install canvas
-npm install dotenv
-npm install multer
-npm install sqlite3 sqlite
-npm install passport
-npm install path
+npm install canvas  
+npm install dotenv  
+npm install multer  
+npm install sqlite3 sqlite  
+npm install passport  
+npm install path  
 <!-- maybe -->
 npm install passport-google-oauth20
 <!-- maybe -->
