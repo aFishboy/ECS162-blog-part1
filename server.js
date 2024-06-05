@@ -406,7 +406,15 @@ app.post("/deleteAccount", isAuthenticated, async (req, res) => {
         // start a db transaction
         await db.run('BEGIN TRANSACTION');
 
-        //delete likes
+        // get id of all posts liked by user
+        const likedPosts = await db.all("SELECT post_id FROM user_likes WHERE user_id = ?", userId);
+
+        // decrement like count for each liked post
+        for (let { post_id } of likedPosts) {
+            await db.run("UPDATE posts SET likes = likes - 1 WHERE id = ?", post_id);
+        }
+
+        // delete from user likes
         await db.run("DELETE FROM user_likes WHERE user_id = ?", userId);
 
         // get posts
