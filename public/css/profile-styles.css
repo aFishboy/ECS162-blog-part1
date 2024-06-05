@@ -123,3 +123,21 @@
     align-items: center;
     margin-top: 10px;
 }
+
+
+.delete-account {
+    background-color: #4AD988;
+    color: black;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    flex-grow: 1; 
+    height: 37.5px;
+    margin-bottom: 20px;
+}
+
+.delete-account:hover {
+    background-color: #0E592F;
+    color: white;
+}
