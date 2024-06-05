@@ -9,10 +9,10 @@ function handleLikeClick(event) {
                     return Promise.resolve();
                 }
             }
-            response.json();
+            return response.json();
         })
         .then((data) => {
-            if (!data) {
+            if (!data) { 
                 return;
             }
             const likeCountElement = likeButton

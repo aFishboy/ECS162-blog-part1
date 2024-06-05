@@ -77,7 +77,7 @@ async function initializeDB() {
         null,
         null,
         "smallfish.jpg",
-        null,
+        "fish_falling_into_water.gif",
     ];
     const posts = [
         {
