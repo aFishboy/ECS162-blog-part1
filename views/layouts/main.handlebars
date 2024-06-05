@@ -29,8 +29,8 @@
                     <li><a href="/logout">Logout</a></li>
                     <li>
                         <a href="/profile" class="user-info">
-                            <img src="{{#if user.avatar_url}}
-                                            {{user.avatar_url}}
+                            <img src="{{#if user.avatarName}}
+                                            /uploads/{{user.avatarName}}
                                         {{else}}
                                             /avatar/{{user.username}}
                                         {{/if}}" 
