@@ -399,6 +399,43 @@ app.post("/delete/:id", isAuthenticated, async (req, res) => {
     res.redirect("/");
 });
 
+app.post("/deleteAccount", isAuthenticated, async (req, res) => {
+    const userId = req.session.userId;
+
+    try {
+        // start a db transaction
+        await db.run('BEGIN TRANSACTION');
+
+        //delete likes
+        await db.run("DELETE FROM user_likes WHERE user_id = ?", userId);
+
+        // get posts
+        const posts = await db.all("SELECT id FROM posts WHERE username = (SELECT username FROM users WHERE id = ?)", userId);
+
+        // delete all post
+        for (let post of posts) {
+            await db.run("DELETE FROM posts WHERE id = ?", post.id);
+        }
+
+        //delete the user
+        await db.run("DELETE FROM users WHERE id = ?", userId);
+
+        //commit db transaction
+        await db.run('COMMIT');
+
+        // logout user after deletion
+        req.session.destroy(() => {
+            res.redirect("/login"); // Redirect to login page or home page as per your app flow
+        });
+    } catch (error) {
+        await db.run('ROLLBACK');
+        console.error("Error deleting account:", error);
+        res.status(500).send("Failed to delete account.");
+    }
+});
+
+
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Server Activation
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
