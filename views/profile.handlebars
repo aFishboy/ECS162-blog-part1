@@ -6,7 +6,16 @@
 <section class="profile-container">
     <div class="profile-header">
         <div class="profile-avatar">
-            <img src="/avatar/{{user.username}}" alt="User Avatar">
+            <div class="avatar-container">
+                <img src="{{#if user.avatarName}}
+                                /uploads/{{user.avatarName}}
+                            {{else}}
+                                /avatar/{{user.username}}
+                            {{/if}}"  alt="User Avatar" class="avatar-img">
+                <img src="/images/edit-write.512x512.png" alt="Edit Icon" class="edit-icon">
+            </div>
+            <p>Change Profile Picture</p>
+            <input type="file" id="avatar-upload" style="display: none;">
         </div>
         <div class="profile-info">
             <h2>User Profile</h2>
@@ -35,4 +44,5 @@
         {{/if}}
     </div>
 </section>
+
 <script src="/scripts/profile.js"></script>

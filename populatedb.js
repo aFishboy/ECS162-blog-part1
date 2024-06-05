@@ -14,7 +14,7 @@ async function initializeDB() {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL UNIQUE,
             hashedGoogleId TEXT NOT NULL UNIQUE,
-            avatar_url TEXT,
+            avatarName TEXT,
             memberSince DATETIME NOT NULL
         );
 
@@ -42,31 +42,31 @@ async function initializeDB() {
         {
             username: "FishermanFred",
             hashedGoogleId: "hashedGoogleId1",
-            avatar_url: "",
+            avatarName: null,
             memberSince: "2024-01-01 08:00:00",
         },
         {
             username: "ReelAngler",
             hashedGoogleId: "hashedGoogleId2",
-            avatar_url: "",
+            avatarName: null,
             memberSince: "2024-01-02 09:00:00",
         },
         {
             username: "ANewbieNemo",
             hashedGoogleId: "hashedGoogleId3",
-            avatar_url: "",
+            avatarName: null,
             memberSince: "2024-01-04 08:30:00",
         },
         {
             username: "ProBaiter",
             hashedGoogleId: "hashedGoogleId4",
-            avatar_url: "",
+            avatarName: null,
             memberSince: "2024-01-05 10:45:00",
         },
         {
             username: "MasterAngler",
             hashedGoogleId: "hashedGoogleId5",
-            avatar_url: "",
+            avatarName: null,
             memberSince: "2024-01-06 13:15:00",
         },
     ];
@@ -134,11 +134,11 @@ async function initializeDB() {
     await Promise.all(
         users.map((user) => {
             return db.run(
-                "INSERT INTO users (username, hashedGoogleId, avatar_url, memberSince) VALUES (?, ?, ?, ?)",
+                "INSERT INTO users (username, hashedGoogleId, avatarName, memberSince) VALUES (?, ?, ?, ?)",
                 [
                     user.username,
                     user.hashedGoogleId,
-                    user.avatar_url,
+                    user.avatarName,
                     user.memberSince,
                 ]
             );
