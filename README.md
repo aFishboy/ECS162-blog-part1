@@ -6,7 +6,7 @@
 
 Make sure to have the database initialized before starting the server.  
 By default the database is not included in the git code.  
-Use ```node populatedb.js``` to initializes the database.
+Use ```node populatedb.js``` to initialize the database.
 
 ## Necessary Installations
 

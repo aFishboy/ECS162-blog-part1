@@ -23,6 +23,9 @@
             <p>Member since: {{user.memberSince}}</p>
         </div>
     </div>
+    
+    {{!-- delete Account --}}
+    <button class="delete-account" onclick="deleteAccount()">Delete Account</button>
 
     <div class="user-posts">
         <!-- you can call posts tweets, or truths, or whatever, these are neologisms. Choose your own new in server.js -->
@@ -43,4 +46,3 @@
 </section>
 
 <script src="/scripts/profile.js"></script>
-
