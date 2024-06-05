@@ -327,7 +327,6 @@ app.get("/profile", isAuthenticated, async (req, res) => {
         user.username
     );
     for (const post of userPosts) {
-        console.log("🚀 ~ app.get ~ post:", post)
         post.userAvatar = await getAvatarName(user.id);
     }
     user.posts = userPosts;
