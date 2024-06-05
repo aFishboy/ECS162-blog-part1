@@ -94,7 +94,7 @@ async function initializeDB() {
             imageName: images[1],
             username: "ReelAngler",
             timestamp: "2024-01-02 12:00:00",
-            likes: 3,
+            likes: 7,
         },
         {
             title: "The One That Got Away",
