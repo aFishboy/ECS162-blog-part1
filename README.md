@@ -1,4 +1,4 @@
-# ECS162 Blog Part A
+# ECS162 Blog
 
 ## Aidan Khatana, Samuel Howard
 
