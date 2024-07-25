@@ -22,7 +22,10 @@ EMOJI_API_KEY=your_emoji_api_key
 
 To get an API key, go to: https://emoji-api.com/
 
-<video src='https://youtu.be/CtbImUoT3Xo' width=180/>
+## Check Out the Demo!
+<a href="https://youtu.be/CtbImUoT3Xo" target="_blank">
+  <img src="https://img.youtube.com/vi/CtbImUoT3Xo/maxresdefault.jpg" alt="Watch the video" />
+</a>
 
 ## Additional Features
 
