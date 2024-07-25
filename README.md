@@ -1,6 +1,6 @@
 # Finster
 
-## Aidan Khatana, Samuel Howard
+## Samuel Howard, Aidan Khatana
 
 ## Setting up the Repository
 
