@@ -22,4 +22,3 @@ EMOJI_API_KEY=your_emoji_api_key
 
 To get an API key, go to: https://emoji-api.com/
 
-This version makes the instructions easy to follow and ensures clarity on the steps required to set up the project, including the necessary environment variables for emojis.
