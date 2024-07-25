@@ -22,7 +22,7 @@ EMOJI_API_KEY=your_emoji_api_key
 
 To get an API key, go to: https://emoji-api.com/
 
-## Additional Features Added for Final Project
+## Additional Features
 
 - **Image/GIF Upload for Posts**: Users can now upload images or GIFs to include in posts. A new button has been added to the create post section, allowing users to upload images from their file system. Supported file types include png, jpg, and gif.
 - **Profile Picture Upload**: Users can upload images or GIFs to use as a profile picture, replacing the default avatar. The custom profile picture will populate all instances of profile pictures and is persistent even if the server is taken down. Supported file types include png, jpg, and gif.
