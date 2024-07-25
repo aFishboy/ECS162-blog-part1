@@ -1,35 +1,25 @@
-# ECS162 Blog
+# Finster
 
 ## Aidan Khatana, Samuel Howard
 
-## Preliminary Steps
+## Setting up the Repository
 
-Make sure to have the database initialized before starting the server.  
-By default the database is not included in the git code.  
-Use ```node populatedb.js``` to initialize the database.
+1. Run `npm install` to install the necessary dependencies.
 
-## Necessary Installations
-
-npm init -y  
-npm install express express-handlebars  
-npm install express-session  
-npm install canvas  
-npm install dotenv  
-npm install multer  
-npm install sqlite3 sqlite  
-npm install passport  
-npm install path  
-<!-- maybe -->
-npm install passport-google-oauth20
-<!-- maybe -->
+2. Make sure to have the database initialized before starting the server. By default, the database is not included in the git code. Use `node populatedb.js` to initialize the database.
 
 ## Optional Installations
 
-npm install -g nodemon
+To use nodemon for automatically restarting the server during development, install it globally with:
 
-## MANDATORY FOR EMOJIS
+```npm install -g nodemon```
 
-In order to get emojis to work a .env file must be created with the format:  
-EMOJI_API_KEY=your_emoji_api_key  
+## Mandatory for Emojis
 
-To get an api key got to: https://emoji-api.com/
+In order to get emojis to work, a .env file must be created with the following format:
+
+EMOJI_API_KEY=your_emoji_api_key
+
+To get an API key, go to: https://emoji-api.com/
+
+This version makes the instructions easy to follow and ensures clarity on the steps required to set up the project, including the necessary environment variables for emojis.
