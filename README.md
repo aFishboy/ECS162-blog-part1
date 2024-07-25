@@ -22,6 +22,8 @@ EMOJI_API_KEY=your_emoji_api_key
 
 To get an API key, go to: https://emoji-api.com/
 
+<video src='https://youtu.be/CtbImUoT3Xo' width=180/>
+
 ## Additional Features
 
 - **Image/GIF Upload for Posts**: Users can now upload images or GIFs to include in posts. A new button has been added to the create post section, allowing users to upload images from their file system. Supported file types include png, jpg, and gif.
